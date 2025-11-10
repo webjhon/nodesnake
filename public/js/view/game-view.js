@@ -1,4 +1,5 @@
 import ClientConfig from '../config/client-config.js';
+import PlayerSkins from '../config/player-skins.js';
 import DomHelper from './dom-helper.js';
 
 const ENTER_KEYCODE = 13;
@@ -23,6 +24,9 @@ export default class GameView {
         this.playerNameUpdatedCallback = playerNameUpdatedCallback;
         this.spectateGameCallback = spectateGameCallback;
         this.fullScreenChangedCallback = fullScreenChangedCallback;
+        this.presetSkinButtons = [];
+        this.selectedPresetSkinId = null;
+        this._renderPresetSkins();
         this._initEventHandling(botChangeCallback, foodChangeCallback, muteAudioCallback, playerColorChangeCallback,
             speedChangeCallback, startLengthChangeCallback, toggleGridLinesCallback);
     }
@@ -180,6 +184,7 @@ export default class GameView {
             const self = this;
             image.onload = () => {
                 self.imageUploadCallback(image, uploadedImageAsFile.type);
+                self._markPresetSkinSelected(null);
             };
             image.src = URL.createObjectURL(uploadedImageAsFile);
         }
@@ -216,7 +221,10 @@ export default class GameView {
         DomHelper.getChangeNameButton().addEventListener('click', this._handleChangeNameButtonClick.bind(this));
         DomHelper.getPlayerNameElement().addEventListener('blur', this._saveNewPlayerName.bind(this));
         DomHelper.getImageUploadElement().addEventListener('change', this._handleImageUpload.bind(this));
-        DomHelper.getClearUploadedImageButton().addEventListener('click', this.imageUploadCallback);
+        DomHelper.getClearUploadedImageButton().addEventListener('click', event => {
+            this.imageUploadCallback(event);
+            this._markPresetSkinSelected(null);
+        });
         DomHelper.getBackgroundImageUploadElement().addEventListener('change', this._handleBackgroundImageUpload.bind(this));
         DomHelper.getClearUploadedBackgroundImageButton().addEventListener('click', this.backgroundImageUploadCallback);
         DomHelper.getPlayOrWatchButton().addEventListener('click', this._handlePlayOrWatchButtonClick.bind(this));
@@ -257,6 +265,47 @@ export default class GameView {
     _handleFullScreenChange(isFullScreen) {
         if (this.fullScreenChangedCallback) {
             this.fullScreenChangedCallback(isFullScreen);
+        }
+    }
+
+    _markPresetSkinSelected(skinId) {
+        this.selectedPresetSkinId = skinId;
+        for (const button of this.presetSkinButtons) {
+            const isSelected = button.getAttribute('data-skin-id') === skinId;
+            button.classList.toggle('is-selected', Boolean(skinId) && isSelected);
+        }
+    }
+
+    _renderPresetSkins() {
+        const presetSkinListElement = DomHelper.getPresetSkinListElement();
+        if (!presetSkinListElement) {
+            return;
+        }
+        this._markPresetSkinSelected(null);
+        this.presetSkinButtons = [];
+        presetSkinListElement.innerHTML = '';
+        let storedBase64Image;
+        try {
+            storedBase64Image = localStorage.getItem(ClientConfig.LOCAL_STORAGE.PLAYER_IMAGE);
+        } catch (error) {
+            storedBase64Image = null;
+        }
+        for (const skin of PlayerSkins) {
+            const button = DomHelper.createElement('button');
+            button.type = 'button';
+            button.className = 'preset-skin-option';
+            button.setAttribute('data-skin-id', skin.id);
+            button.innerHTML = `<span class='preset-skin-preview-wrapper'><img src='${skin.preview}' ` +
+                `alt='${skin.name}' class='preset-skin-preview'></span><span class='preset-skin-name'>${skin.name}</span>`;
+            button.addEventListener('click', () => {
+                this.imageUploadCallback(null, null, skin.base64Image);
+                this._markPresetSkinSelected(skin.id);
+            });
+            presetSkinListElement.appendChild(button);
+            this.presetSkinButtons.push(button);
+            if (storedBase64Image === skin.base64Image) {
+                this._markPresetSkinSelected(skin.id);
+            }
         }
     }
 }
