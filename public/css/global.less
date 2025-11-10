@@ -1,53 +1,153 @@
-@background-color: #000000;
-@button-background-color: #383838;
-@button-background-hover-color: #808080;
-@font-family: PressStart2P;
-@label-font-size: 24px;
-@navbar-height: 60px;
-@text-color: #ffffff;
+@background-color: #05070f;
+@background-gradient-start: #05070f;
+@background-gradient-end: #101935;
+@surface-color: rgba(13, 18, 34, 0.85);
+@button-background-color: rgba(34, 42, 68, 0.9);
+@button-background-hover-color: rgba(58, 92, 163, 0.95);
+@accent-color: #00ffc6;
+@muted-text-color: rgba(255, 255, 255, 0.55);
+@font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+@label-font-size: 20px;
+@navbar-height: 88px;
+@text-color: #f4f6ff;
+@border-glow: rgba(0, 255, 198, 0.25);
 
-@font-face {
-    font-family: @font-family;
-    src: url('../fonts/PressStart2P.ttf');
-}
 html,
 body {
     height: 100%;
 }
 
 body {
-    background-color: @background-color;
+    background: radial-gradient(circle at top, fade(@background-gradient-end, 90%) 0%, fade(@background-color, 98%) 55%),
+        linear-gradient(160deg, @background-gradient-start 0%, @background-gradient-end 100%);
     color: @text-color;
     font-family: @font-family;
     margin: 0;
+    min-height: 100%;
+    overflow-x: hidden;
     padding: @navbar-height 0 0 0;
+    position: relative;
 }
 
 body.is-fullscreen {
     overflow: hidden;
     padding: 0;
 }
+
+body::before {
+    background: radial-gradient(circle at center, fade(@accent-color, 18%) 0%, rgba(0, 0, 0, 0) 55%),
+        repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.02) 0px, rgba(255, 255, 255, 0.02) 1px, transparent 1px, transparent 16px);
+    content: "";
+    height: 100%;
+    left: 0;
+    pointer-events: none;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 0;
+}
+
 button {
     background: @button-background-color;
-    border-color: transparent;
-    border-radius: 5px;
+    border: 1px solid fade(@accent-color, 35%);
+    border-radius: 10px;
     color: @text-color;
     font-family: @font-family;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    padding: 14px 18px;
     text-decoration: none;
+    transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
     &:hover {
         background: @button-background-hover-color;
+        border-color: fade(@accent-color, 65%);
         cursor: pointer;
         text-decoration: none;
+        transform: translateY(-1px);
     }
 }
+
 fieldset {
-    max-width: 1175px;
+    border: 1px solid fade(@accent-color, 20%);
+    border-radius: 16px;
+    margin: 0;
+    max-width: 1240px;
+    padding: 30px;
+    position: relative;
 }
+
+legend {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    padding: 0 12px;
+    text-transform: uppercase;
+}
+
+a,
+a:visited {
+    color: @text-color;
+    transition: color 0.3s ease;
+}
+
+a:hover {
+    color: @accent-color;
+}
+
+.glass-panel {
+    background: @surface-color;
+    border: 1px solid fade(@accent-color, 18%);
+    border-radius: 18px;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35), 0 0 45px fade(@accent-color, 10%);
+    position: relative;
+    z-index: 2;
+    &::before {
+        background: linear-gradient(135deg, fade(@accent-color, 28%) 0%, rgba(255, 255, 255, 0.04) 100%);
+        border-radius: inherit;
+        content: "";
+        height: 100%;
+        left: 0;
+        opacity: 0.65;
+        position: absolute;
+        top: 0;
+        width: 100%;
+        z-index: -1;
+    }
+}
+
+.subtitle-text {
+    color: @muted-text-color;
+    font-size: 14px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.divider {
+    background: fade(@accent-color, 25%);
+    border-radius: 999px;
+    height: 2px;
+    margin: 20px 0;
+    width: 100%;
+}
+
+input,
+select,
+textarea {
+    background: rgba(7, 12, 23, 0.8);
+    border: 1px solid fade(@accent-color, 25%);
+    border-radius: 10px;
+    color: @text-color;
+    font-family: @font-family;
+    font-size: 16px;
+    padding: 12px 14px;
+}
+
 * {
     &:focus {
         outline: none;
     }
 }
+
 .non-selectable {
     -moz-user-select: none;
     -ms-user-select: none;
