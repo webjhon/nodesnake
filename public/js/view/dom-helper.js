@@ -22,6 +22,16 @@ export default class DomHelper {
         return document.body;
     }
 
+    static isFullScreen() {
+        return Boolean(document.fullscreenElement ||
+            document.mozFullScreenElement ||
+            document.webkitFullscreenElement ||
+            document.msFullscreenElement ||
+            document.fullScreenElement ||
+            document.mozFullScreen ||
+            document.webkitIsFullScreen);
+    }
+
     static getClearUploadedBackgroundImageButton() {
         return document.getElementById('clearUploadedBackgroundImageButton');
     }
@@ -183,24 +193,57 @@ export default class DomHelper {
         document.getElementById('invalid-player-name-label').style.display = 'inline';
     }
 
+    static registerFullScreenChangeHandler(callback) {
+        this.fullScreenChangeCallback = callback;
+        if (!this.fullScreenChangeHandler) {
+            const handler = () => {
+                const isFullScreen = this.isFullScreen();
+                this.getBody().classList.toggle('is-fullscreen', isFullScreen);
+                if (this.fullScreenChangeCallback) {
+                    this.fullScreenChangeCallback(isFullScreen);
+                }
+            };
+            ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange']
+                .forEach(eventName => {
+                    document.addEventListener(eventName, handler);
+                });
+            this.fullScreenChangeHandler = handler;
+        }
+
+        if (this.fullScreenChangeHandler) {
+            this.fullScreenChangeHandler();
+        }
+    }
+
     static toggleFullScreenMode() {
-        if ((document.fullScreenElement && document.fullScreenElement !== null) ||
-            (!document.mozFullScreen && !document.webkitIsFullScreen)) {
-            if (document.documentElement.requestFullScreen) {
-                document.documentElement.requestFullScreen();
-            } else if (document.documentElement.mozRequestFullScreen) {
-                document.documentElement.mozRequestFullScreen();
-            } else if (document.documentElement.webkitRequestFullScreen) {
-                document.documentElement.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+        if (!this.isFullScreen()) {
+            const element = document.documentElement;
+            if (element.requestFullscreen) {
+                element.requestFullscreen();
+            } else if (element.mozRequestFullScreen) {
+                element.mozRequestFullScreen();
+            } else if (element.webkitRequestFullScreen) {
+                element.webkitRequestFullScreen(Element.ALLOW_KEYBOARD_INPUT);
+            } else if (element.msRequestFullscreen) {
+                element.msRequestFullscreen();
             }
         } else {
-            if (document.cancelFullScreen) {
+            if (document.exitFullscreen) {
+                document.exitFullscreen();
+            } else if (document.cancelFullScreen) {
                 document.cancelFullScreen();
             } else if (document.mozCancelFullScreen) {
                 document.mozCancelFullScreen();
             } else if (document.webkitCancelFullScreen) {
                 document.webkitCancelFullScreen();
+            } else if (document.webkitExitFullscreen) {
+                document.webkitExitFullscreen();
+            } else if (document.msExitFullscreen) {
+                document.msExitFullscreen();
             }
         }
     }
 }
+
+DomHelper.fullScreenChangeHandler = null;
+DomHelper.fullScreenChangeCallback = null;

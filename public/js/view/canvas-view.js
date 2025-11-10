@@ -8,10 +8,14 @@ export default class CanvasView {
         this.height = canvas.height;
         this.width = canvas.width;
         this.context = canvas.getContext('2d');
+        this.canvas = canvas;
+        this.defaultDisplayWidth = canvas.style.width;
+        this.defaultDisplayHeight = canvas.style.height;
         this.squareSizeInPixels = squareSizeInPixels;
         this.backgroundImageUploadCanvas = canvas;
         this.imageUploadCanvas = imageUploadCanvas;
         this.showGridLines = false;
+        this.boundResizeHandler = null;
         this._initializeClickListeners(canvas, canvasClickHandler);
     }
 
@@ -163,6 +167,22 @@ export default class CanvasView {
         this.showGridLines = !this.showGridLines;
     }
 
+    updateDisplaySize(isFullScreen) {
+        if (isFullScreen) {
+            if (!this.boundResizeHandler) {
+                this.boundResizeHandler = this._scaleCanvasToWindow.bind(this);
+            }
+            this._scaleCanvasToWindow();
+            window.addEventListener('resize', this.boundResizeHandler);
+        } else {
+            if (this.boundResizeHandler) {
+                window.removeEventListener('resize', this.boundResizeHandler);
+            }
+            this.boundResizeHandler = null;
+            this._resetCanvasDisplaySize();
+        }
+    }
+
     // Gets a fade-in/fade-out opacity
     _getOpacityFromCounter(counter, turnsToShow) {
         if (counter < turnsToShow * 0.1 || counter > turnsToShow * 0.9) {
@@ -176,11 +196,35 @@ export default class CanvasView {
     _initializeClickListeners(canvas, canvasClickHandler) {
         const self = this;
         canvas.addEventListener('click', event => {
-            const x = event.pageX - canvas.offsetLeft;
-            const y = event.pageY - canvas.offsetTop;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = rect.width ? canvas.width / rect.width : 1;
+            const scaleY = rect.height ? canvas.height / rect.height : 1;
+            const x = (event.clientX - rect.left) * scaleX;
+            const y = (event.clientY - rect.top) * scaleY;
             const xCoord = Math.round(x / self.squareSizeInPixels);
             const yCoord = Math.round(y / self.squareSizeInPixels);
             canvasClickHandler(xCoord, yCoord);
         }, false);
+    }
+
+    _resetCanvasDisplaySize() {
+        if (!this.canvas) {
+            return;
+        }
+        this.canvas.style.width = this.defaultDisplayWidth;
+        this.canvas.style.height = this.defaultDisplayHeight;
+    }
+
+    _scaleCanvasToWindow() {
+        if (!this.canvas) {
+            return;
+        }
+        const widthScale = window.innerWidth / this.width;
+        const heightScale = window.innerHeight / this.height;
+        const scale = Math.min(widthScale, heightScale);
+        const scaledWidth = this.width * scale;
+        const scaledHeight = this.height * scale;
+        this.canvas.style.width = `${scaledWidth}px`;
+        this.canvas.style.height = `${scaledHeight}px`;
     }
 }
