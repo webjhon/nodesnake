@@ -10,12 +10,22 @@
     font-family: @font-family;
     src: url('../fonts/PressStart2P.ttf');
 }
+html,
+body {
+    height: 100%;
+}
+
 body {
     background-color: @background-color;
     color: @text-color;
     font-family: @font-family;
     margin: 0;
     padding: @navbar-height 0 0 0;
+}
+
+body.is-fullscreen {
+    overflow: hidden;
+    padding: 0;
 }
 button {
     background: @button-background-color;

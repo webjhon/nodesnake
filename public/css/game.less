@@ -165,3 +165,50 @@
     top: -@navbar-height;
     visibility: hidden;
 }
+
+body.is-fullscreen #cover {
+    height: 100vh;
+}
+
+body.is-fullscreen .body-content {
+    align-items: center;
+    display: flex;
+    height: 100vh;
+    justify-content: center;
+    margin: 0;
+    width: 100vw;
+}
+
+body.is-fullscreen .main-container {
+    height: 100%;
+    width: 100%;
+}
+
+body.is-fullscreen .left-content {
+    align-items: center;
+    display: flex;
+    float: none;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+body.is-fullscreen .navigation,
+body.is-fullscreen .right-content,
+body.is-fullscreen .settings-menu,
+body.is-fullscreen #kill-messages {
+    display: none;
+}
+
+body.is-fullscreen #game-board {
+    align-items: center;
+    display: flex;
+    height: 100%;
+    justify-content: center;
+    width: 100%;
+}
+
+body.is-fullscreen #game-board canvas {
+    max-height: 100vh;
+    max-width: 100vw;
+}

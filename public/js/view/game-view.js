@@ -12,7 +12,8 @@ const DOWN_ARROW_KEYCODE = 40;
 export default class GameView {
     constructor(backgroundImageUploadCallback, botChangeCallback, foodChangeCallback, imageUploadCallback,
         joinGameCallback, keyDownCallback, muteAudioCallback, playerColorChangeCallback, playerNameUpdatedCallback,
-        spectateGameCallback, speedChangeCallback, startLengthChangeCallback, toggleGridLinesCallback) {
+        spectateGameCallback, speedChangeCallback, startLengthChangeCallback, toggleGridLinesCallback,
+        fullScreenChangedCallback) {
         this.isChangingName = false;
         this.backgroundImageUploadCallback = backgroundImageUploadCallback;
         this.imageUploadCallback = imageUploadCallback;
@@ -21,6 +22,7 @@ export default class GameView {
         this.muteAudioCallback = muteAudioCallback;
         this.playerNameUpdatedCallback = playerNameUpdatedCallback;
         this.spectateGameCallback = spectateGameCallback;
+        this.fullScreenChangedCallback = fullScreenChangedCallback;
         this._initEventHandling(botChangeCallback, foodChangeCallback, muteAudioCallback, playerColorChangeCallback,
             speedChangeCallback, startLengthChangeCallback, toggleGridLinesCallback);
     }
@@ -248,5 +250,13 @@ export default class GameView {
             startLengthChangeCallback.bind(this, ClientConfig.INCREMENT_CHANGE.DECREASE));
         DomHelper.getResetStartLengthButton().addEventListener('click',
             startLengthChangeCallback.bind(this, ClientConfig.INCREMENT_CHANGE.RESET));
+
+        DomHelper.registerFullScreenChangeHandler(this._handleFullScreenChange.bind(this));
+    }
+
+    _handleFullScreenChange(isFullScreen) {
+        if (this.fullScreenChangedCallback) {
+            this.fullScreenChangedCallback(isFullScreen);
+        }
     }
 }
