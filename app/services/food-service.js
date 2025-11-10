@@ -1,5 +1,6 @@
 'use strict';
 const ServerConfig = require('../configs/server-config');
+const { FOOD_APPEARANCE_IDS } = require('../configs/food-appearance-config');
 const Food = require('../models/food');
 
 /**
@@ -81,17 +82,50 @@ class FoodService {
         }
         const foodId = this.nameService.getFoodId();
         let food;
+        const appearanceId = this._getRandomAppearanceId();
         if (Math.random() < ServerConfig.FOOD.GOLDEN.SPAWN_RATE) {
-            food = new Food(foodId, randomUnoccupiedCoordinate, ServerConfig.FOOD.GOLDEN.TYPE, ServerConfig.FOOD.GOLDEN.COLOR);
+            food = new Food(
+                foodId,
+                randomUnoccupiedCoordinate,
+                ServerConfig.FOOD.GOLDEN.TYPE,
+                ServerConfig.FOOD.GOLDEN.COLOR,
+                appearanceId
+            );
         } else if (Math.random() < ServerConfig.FOOD.SWAP.SPAWN_RATE) {
-            food = new Food(foodId, randomUnoccupiedCoordinate, ServerConfig.FOOD.SWAP.TYPE, ServerConfig.FOOD.SWAP.COLOR);
+            food = new Food(
+                foodId,
+                randomUnoccupiedCoordinate,
+                ServerConfig.FOOD.SWAP.TYPE,
+                ServerConfig.FOOD.SWAP.COLOR,
+                appearanceId
+            );
         } else if (Math.random() < ServerConfig.FOOD.SUPER.SPAWN_RATE) {
-            food = new Food(foodId, randomUnoccupiedCoordinate, ServerConfig.FOOD.SUPER.TYPE, ServerConfig.FOOD.SUPER.COLOR);
+            food = new Food(
+                foodId,
+                randomUnoccupiedCoordinate,
+                ServerConfig.FOOD.SUPER.TYPE,
+                ServerConfig.FOOD.SUPER.COLOR,
+                appearanceId
+            );
         } else {
-            food = new Food(foodId, randomUnoccupiedCoordinate, ServerConfig.FOOD.NORMAL.TYPE, ServerConfig.FOOD.NORMAL.COLOR);
+            food = new Food(
+                foodId,
+                randomUnoccupiedCoordinate,
+                ServerConfig.FOOD.NORMAL.TYPE,
+                ServerConfig.FOOD.NORMAL.COLOR,
+                appearanceId
+            );
         }
         this.food[foodId] = food;
         this.boardOccupancyService.addFoodOccupancy(food.id, food.coordinate);
+    }
+
+    _getRandomAppearanceId() {
+        if (!FOOD_APPEARANCE_IDS.length) {
+            return null;
+        }
+        const randomIndex = Math.floor(Math.random() * FOOD_APPEARANCE_IDS.length);
+        return FOOD_APPEARANCE_IDS[randomIndex];
     }
 
     getFood() {
