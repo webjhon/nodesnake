@@ -418,6 +418,7 @@ input[type="range"]::-moz-range-thumb {
     display: none;
     inset: 0;
     justify-content: center;
+    padding: 24px 16px;
     position: fixed;
     z-index: 20;
     &.is-open {
@@ -433,6 +434,8 @@ input[type="range"]::-moz-range-thumb {
 
 
 .modal-dialog {
+    display: flex;
+    max-height: calc(100vh - 48px);
     max-width: 760px;
     padding: 0 12px;
     position: relative;
@@ -443,10 +446,11 @@ input[type="range"]::-moz-range-thumb {
 
 .modal-content {
     &:extend(.glass-panel);
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     gap: 18px;
-    max-height: 80vh;
+    max-height: 100%;
     overflow: hidden;
     padding: 28px 28px 30px;
     position: relative;
@@ -470,6 +474,18 @@ input[type="range"]::-moz-range-thumb {
 }
 
 @media (max-width: 768px) {
+    .modal {
+        padding: 16px;
+    }
+
+    .modal-dialog {
+        max-height: calc(100vh - 32px);
+    }
+
+    .modal-content {
+        padding: 24px;
+    }
+
     .player-settings__fieldset {
         padding-right: 0;
     }
@@ -505,5 +521,9 @@ input[type="range"]::-moz-range-thumb {
     .player-settings__nav-link {
         flex: 0 0 auto;
         white-space: nowrap;
+    }
+
+    .modal-content {
+        padding: 20px 18px 24px;
     }
 }
