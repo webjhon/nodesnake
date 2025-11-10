@@ -21,13 +21,15 @@ export default class GameController {
                                      this.spectateGameCallback.bind(this),
                                      this.speedChangeCallback.bind(this),
                                      this.startLengthChangeCallback.bind(this),
-                                     this.toggleGridLinesCallback.bind(this)
+                                     this.toggleGridLinesCallback.bind(this),
+                                     this.handleFullScreenChange.bind(this)
                                      );
         this.audioController = new AudioController();
         this.players = [];
         this.food = {};
         this.textsToDraw = [];
         this.walls = [];
+        this.isFullScreen = false;
     }
 
     connect(io) {
@@ -164,6 +166,13 @@ export default class GameController {
         this.canvasView.toggleGridLines();
     }
 
+    handleFullScreenChange(isFullScreen) {
+        this.isFullScreen = isFullScreen;
+        if (this.canvasView) {
+            this.canvasView.updateDisplaySize(isFullScreen);
+        }
+    }
+
     /*******************************
      *  socket.io handling methods *
      *******************************/
@@ -173,6 +182,7 @@ export default class GameController {
             CanvasFactory.createCanvasView(
                 board.SQUARE_SIZE_IN_PIXELS, board.HORIZONTAL_SQUARES, board.VERTICAL_SQUARES, this.canvasClicked.bind(this));
         this.canvasView.clear();
+        this.canvasView.updateDisplaySize(this.isFullScreen);
         this.gameView.ready();
         this.renderGame();
     }
