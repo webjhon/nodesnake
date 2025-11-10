@@ -113,7 +113,7 @@ export default class GameController {
 
     // optional resizedBase64Image
     imageUploadCallback(image, imageType, resizedBase64Image) {
-        if (!(image && imageType)) {
+        if (!(image && imageType) && !resizedBase64Image) {
             this.socket.emit(ClientConfig.IO.OUTGOING.CLEAR_UPLOADED_IMAGE);
             localStorage.removeItem(ClientConfig.LOCAL_STORAGE.PLAYER_IMAGE);
             return;

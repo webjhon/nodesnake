@@ -96,6 +96,10 @@ export default class DomHelper {
         return document.getElementById('notifications');
     }
 
+    static getPresetSkinListElement() {
+        return document.getElementById('preset-skin-list');
+    }
+
     static getPlayerNameElement() {
         return document.getElementById('player-name');
     }
