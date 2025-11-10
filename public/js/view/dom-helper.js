@@ -18,6 +18,50 @@ export default class DomHelper {
         return document.getElementById('background-image-upload');
     }
 
+    static getAdminControlsButton() {
+        return document.getElementById('admin-controls-button');
+    }
+
+    static getAdminControlsModal() {
+        return document.getElementById('admin-controls-modal');
+    }
+
+    static getAdminControlsCloseButton() {
+        return document.getElementById('admin-controls-close-button');
+    }
+
+    static getAdminControlsBackdrop() {
+        return document.getElementById('admin-controls-backdrop');
+    }
+
+    static getAdminControlsUnlockButton() {
+        return document.getElementById('admin-controls-unlock-button');
+    }
+
+    static getAdminControlsPasswordInput() {
+        return document.getElementById('admin-controls-password');
+    }
+
+    static getAdminControlsPasswordFeedback() {
+        return document.getElementById('admin-controls-password-feedback');
+    }
+
+    static getAdminControlsLock() {
+        return document.getElementById('admin-controls-lock');
+    }
+
+    static getAdminControlsContent() {
+        return document.getElementById('admin-controls-content');
+    }
+
+    static getAdminControlsNavLinks() {
+        return document.querySelectorAll('#admin-controls-modal .player-settings__nav-link');
+    }
+
+    static getAdminControlButtons() {
+        return document.querySelectorAll('#admin-controls-content [data-admin-control]');
+    }
+
     static getBody() {
         return document.body;
     }
@@ -160,6 +204,13 @@ export default class DomHelper {
         this.getChangeNameButton().innerHTML = text;
     }
 
+    static setAdminControlsPasswordValue(value) {
+        const input = this.getAdminControlsPasswordInput();
+        if (input) {
+            input.value = value;
+        }
+    }
+
     static setCurrentFoodAmountLabelText(text) {
         document.getElementById('currentFoodAmount').innerHTML = text;
     }
@@ -231,6 +282,88 @@ export default class DomHelper {
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         this.getBody().classList.remove('modal-open');
+    }
+
+    static showAdminControlsModal() {
+        const modal = this.getAdminControlsModal();
+        if (!modal) {
+            return;
+        }
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        this.getBody().classList.add('modal-open');
+    }
+
+    static hideAdminControlsModal() {
+        const modal = this.getAdminControlsModal();
+        if (!modal) {
+            return;
+        }
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        this.getBody().classList.remove('modal-open');
+    }
+
+    static hideAdminControlsPasswordFeedback() {
+        const feedback = this.getAdminControlsPasswordFeedback();
+        if (feedback) {
+            feedback.style.display = 'none';
+        }
+    }
+
+    static showAdminControlsPasswordFeedback() {
+        const feedback = this.getAdminControlsPasswordFeedback();
+        if (feedback) {
+            feedback.style.display = 'inline';
+        }
+    }
+
+    static showAdminControlsLock() {
+        const lock = this.getAdminControlsLock();
+        if (lock) {
+            lock.hidden = false;
+        }
+    }
+
+    static hideAdminControlsLock() {
+        const lock = this.getAdminControlsLock();
+        if (lock) {
+            lock.hidden = true;
+        }
+    }
+
+    static setAdminControlsInteractive(isEnabled) {
+        const navLinks = this.getAdminControlsNavLinks();
+        for (const link of navLinks) {
+            if (isEnabled) {
+                link.classList.remove('is-disabled');
+                link.setAttribute('tabindex', '0');
+                link.setAttribute('aria-disabled', 'false');
+            } else {
+                link.classList.add('is-disabled');
+                link.setAttribute('tabindex', '-1');
+                link.setAttribute('aria-disabled', 'true');
+            }
+        }
+
+        const buttons = this.getAdminControlButtons();
+        for (const control of buttons) {
+            if (control instanceof HTMLButtonElement) {
+                control.disabled = !isEnabled;
+                control.setAttribute('aria-disabled', String(!isEnabled));
+            } else {
+                control.setAttribute('aria-disabled', String(!isEnabled));
+            }
+        }
+
+        const content = this.getAdminControlsContent();
+        if (content) {
+            if (isEnabled) {
+                content.removeAttribute('aria-hidden');
+            } else {
+                content.setAttribute('aria-hidden', 'true');
+            }
+        }
     }
 
     static registerFullScreenChangeHandler(callback) {

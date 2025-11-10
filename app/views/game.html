@@ -23,6 +23,10 @@
                                 <span aria-hidden="true">⚙</span>
                                 <span class="sr-only">Configurações</span>
                             </button>
+                            <button id="admin-controls-button" class="nav-icon-button" type="button" title="Abrir controles do administrador">
+                                <span aria-hidden="true">🛠</span>
+                                <span class="sr-only">Controles do Administrador</span>
+                            </button>
                             <button id="full-screen-button" title="Entrar em modo tela cheia"></button>
                         </div>
                     </div>
@@ -136,41 +140,95 @@
                         </section>
                     </div>
                 </div>
-                <section id="adminControls" class="settings-menu">
-                    <fieldset>
-                        <legend>Controles do Administrador</legend>
-                        <p class="subtitle-text">Equilibre a arena para desafiar sua tripulação</p>
-                        <div class="divider"></div>
-                        <div class="options-controls" class="settings-menu">
-                            <label class="options-label">Velocidade: </label>
-                            <label id="currentSpeed" class="options-value"></label>
-                            <button id="decreaseSpeedButton" class="minus-button" title="-1"></button>
-                            <button id="increaseSpeedButton" class="plus-button" title="+1"></button>
-                            <button id="resetSpeedButton" class="reset-button" title="Restaurar padrão"></button>
-                        </div>
-                        <div class="options-controls" class="settings-menu">
-                            <label class="options-label">Comida: </label>
-                            <label id="currentFoodAmount" class="options-value"></label>
-                            <button id="decreaseFoodButton" class="minus-button" title="-1"></button>
-                            <button id="increaseFoodButton" class="plus-button" title="+1"></button>
-                            <button id="resetFoodButton" class="reset-button" title="Restaurar padrão"></button>
-                        </div>
-                        <div class="options-controls">
-                            <label class="options-label">Bots: </label>
-                            <label id="currentNumberOfBots" class="options-value"></label>
-                            <button id="decreaseBotsButton" class="minus-button" title="-1"></button>
-                            <button id="increaseBotsButton" class="plus-button" title="+1"></button>
-                            <button id="resetBotsButton" class="reset-button" title="Restaurar padrão"></button>
-                        </div>
-                        <div class="options-controls">
-                            <label class="options-label">Tamanho Inicial: </label>
-                            <label id="currentStartLength" class="options-value"></label>
-                            <button id="decreaseStartLengthButton" class="minus-button" title="-1"></button>
-                            <button id="increaseStartLengthButton" class="plus-button" title="+1"></button>
-                            <button id="resetStartLengthButton" class="reset-button" title="Restaurar padrão"></button>
-                        </div>
-                    </fieldset>
-                </section>
+                <div id="admin-controls-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="admin-controls-title">
+                    <div id="admin-controls-backdrop" class="modal-backdrop" data-close="admin-controls"></div>
+                    <div class="modal-dialog">
+                        <section id="adminControls" class="settings-menu modal-content player-settings admin-controls">
+                            <button type="button" id="admin-controls-close-button" class="modal-close-button" title="Fechar controles do administrador">
+                                <span aria-hidden="true">×</span>
+                                <span class="sr-only">Fechar</span>
+                            </button>
+                            <fieldset class="player-settings__fieldset">
+                                <legend id="admin-controls-title" class="player-settings__title">Controles do Administrador</legend>
+                                <p class="player-settings__subtitle">Equilibre a arena para desafiar sua tripulação.</p>
+                                <div class="player-settings__body admin-controls__body">
+                                    <nav class="player-settings__nav" aria-label="Categorias dos controles do administrador">
+                                        <a class="player-settings__nav-link" href="#admin-settings-velocidade">Velocidade</a>
+                                        <a class="player-settings__nav-link" href="#admin-settings-comida">Comida</a>
+                                        <a class="player-settings__nav-link" href="#admin-settings-bots">Bots</a>
+                                        <a class="player-settings__nav-link" href="#admin-settings-tamanho">Tamanho Inicial</a>
+                                    </nav>
+                                    <div id="admin-controls-content" class="player-settings__content" tabindex="0">
+                                        <section id="admin-settings-velocidade" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Velocidade</h3>
+                                                <p class="settings-section-description">Ajuste a intensidade das rodadas.</p>
+                                            </header>
+                                            <div class="options-controls">
+                                                <label class="options-label" for="currentSpeed">Velocidade atual</label>
+                                                <span id="currentSpeed" class="options-value" aria-live="polite"></span>
+                                                <button id="decreaseSpeedButton" class="minus-button" title="Reduzir velocidade" data-admin-control></button>
+                                                <button id="increaseSpeedButton" class="plus-button" title="Aumentar velocidade" data-admin-control></button>
+                                                <button id="resetSpeedButton" class="reset-button" title="Restaurar velocidade" data-admin-control></button>
+                                            </div>
+                                        </section>
+                                        <section id="admin-settings-comida" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Comida</h3>
+                                                <p class="settings-section-description">Defina a abundância de itens de energia.</p>
+                                            </header>
+                                            <div class="options-controls">
+                                                <label class="options-label" for="currentFoodAmount">Quantidade atual</label>
+                                                <span id="currentFoodAmount" class="options-value" aria-live="polite"></span>
+                                                <button id="decreaseFoodButton" class="minus-button" title="Reduzir comida" data-admin-control></button>
+                                                <button id="increaseFoodButton" class="plus-button" title="Aumentar comida" data-admin-control></button>
+                                                <button id="resetFoodButton" class="reset-button" title="Restaurar comida" data-admin-control></button>
+                                            </div>
+                                        </section>
+                                        <section id="admin-settings-bots" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Bots</h3>
+                                                <p class="settings-section-description">Gerencie reforços automáticos na arena.</p>
+                                            </header>
+                                            <div class="options-controls">
+                                                <label class="options-label" for="currentNumberOfBots">Bots ativos</label>
+                                                <span id="currentNumberOfBots" class="options-value" aria-live="polite"></span>
+                                                <button id="decreaseBotsButton" class="minus-button" title="Remover bots" data-admin-control></button>
+                                                <button id="increaseBotsButton" class="plus-button" title="Adicionar bots" data-admin-control></button>
+                                                <button id="resetBotsButton" class="reset-button" title="Restaurar bots" data-admin-control></button>
+                                            </div>
+                                        </section>
+                                        <section id="admin-settings-tamanho" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Tamanho Inicial</h3>
+                                                <p class="settings-section-description">Controle o comprimento base das cobras.</p>
+                                            </header>
+                                            <div class="options-controls">
+                                                <label class="options-label" for="currentStartLength">Tamanho atual</label>
+                                                <span id="currentStartLength" class="options-value" aria-live="polite"></span>
+                                                <button id="decreaseStartLengthButton" class="minus-button" title="Reduzir tamanho" data-admin-control></button>
+                                                <button id="increaseStartLengthButton" class="plus-button" title="Aumentar tamanho" data-admin-control></button>
+                                                <button id="resetStartLengthButton" class="reset-button" title="Restaurar tamanho" data-admin-control></button>
+                                            </div>
+                                        </section>
+                                    </div>
+                                    <div id="admin-controls-lock" class="admin-controls__lock" role="alertdialog" aria-labelledby="admin-controls-lock-title" aria-modal="true">
+                                        <div class="admin-controls__lock-card">
+                                            <h3 id="admin-controls-lock-title" class="admin-controls__lock-title">Acesso restrito</h3>
+                                            <p class="admin-controls__lock-description">Digite a senha de administrador para ajustar os parâmetros da arena.</p>
+                                            <label class="control-label" for="admin-controls-password">Senha</label>
+                                            <input type="password" id="admin-controls-password" class="admin-controls__password-input" autocomplete="off" spellcheck="false" />
+                                            <p id="admin-controls-password-feedback" class="settings-feedback">Senha incorreta. Tente novamente.</p>
+                                            <div class="admin-controls__lock-actions">
+                                                <button type="button" id="admin-controls-unlock-button" class="options-text-button">Desbloquear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </section>
+                    </div>
+                </div>
             </main>
         </div>
         <!-- socket.io client is exposed by the server.  This sets a global variable io -->
