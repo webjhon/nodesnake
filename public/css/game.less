@@ -125,6 +125,26 @@
     }
 }
 
+.nav-icon-button {
+    align-items: center;
+    background: rgba(34, 42, 68, 0.6);
+    border: 1px solid fade(@accent-color, 35%);
+    border-radius: 50%;
+    color: @text-color;
+    display: inline-flex;
+    font-size: 24px;
+    height: 54px;
+    justify-content: center;
+    transition: background 0.3s ease, border-color 0.3s ease, transform 0.3s ease;
+    width: 54px;
+    &:hover {
+        background: rgba(58, 92, 163, 0.95);
+        border-color: fade(@accent-color, 65%);
+        cursor: pointer;
+        transform: translateY(-1px);
+    }
+}
+
 #full-screen-button {
     align-items: center;
     background: rgba(34, 42, 68, 0.6);
@@ -346,11 +366,7 @@
 }
 
 #invalid-player-name-label {
-    color: #ff5c5c;
-    display: none;
-    font-size: 14px;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    margin-top: 6px;
 }
 
 .settings-menu {
@@ -363,27 +379,6 @@
     border: 1px solid fade(@accent-color, 18%);
     border-radius: 18px;
     box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.35);
-}
-
-.text-button-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 18px;
-    margin: 0;
-    padding: 0;
-}
-
-.text-button-list li {
-    list-style: none;
-}
-
-#changePlayerNameButton,
-#changePlayerColorButton,
-#toggleGridLinesButton,
-#toggleSoundButton,
-#clearUploadedImageButton,
-#clearUploadedBackgroundImageButton {
-    min-width: 220px;
 }
 
 #play-or-watch-button {

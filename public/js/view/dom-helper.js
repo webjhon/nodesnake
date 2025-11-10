@@ -104,6 +104,22 @@ export default class DomHelper {
         return document.getElementById('player-name');
     }
 
+    static getPlayerSettingsButton() {
+        return document.getElementById('player-settings-button');
+    }
+
+    static getPlayerSettingsModal() {
+        return document.getElementById('player-settings-modal');
+    }
+
+    static getPlayerSettingsCloseButton() {
+        return document.getElementById('player-settings-close-button');
+    }
+
+    static getPlayerSettingsBackdrop() {
+        return document.getElementById('player-settings-backdrop');
+    }
+
     static getPlayOrWatchButton() {
         return document.getElementById('play-or-watch-button');
     }
@@ -195,6 +211,26 @@ export default class DomHelper {
 
     static showInvalidPlayerNameLabel() {
         document.getElementById('invalid-player-name-label').style.display = 'inline';
+    }
+
+    static showPlayerSettingsModal() {
+        const modal = this.getPlayerSettingsModal();
+        if (!modal) {
+            return;
+        }
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        this.getBody().classList.add('modal-open');
+    }
+
+    static hidePlayerSettingsModal() {
+        const modal = this.getPlayerSettingsModal();
+        if (!modal) {
+            return;
+        }
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        this.getBody().classList.remove('modal-open');
     }
 
     static registerFullScreenChangeHandler(callback) {
