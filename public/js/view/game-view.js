@@ -6,6 +6,7 @@ const ENTER_KEYCODE = 13;
 const SPACE_BAR_KEYCODE = 32;
 const UP_ARROW_KEYCODE = 38;
 const DOWN_ARROW_KEYCODE = 40;
+const ESCAPE_KEYCODE = 27;
 
 /**
  * Handles all requests related to the display of the game, not including the canvas
@@ -26,6 +27,7 @@ export default class GameView {
         this.fullScreenChangedCallback = fullScreenChangedCallback;
         this.presetSkinButtons = [];
         this.selectedPresetSkinId = null;
+        this.isPlayerSettingsModalOpen = false;
         this._renderPresetSkins();
         this._initEventHandling(botChangeCallback, foodChangeCallback, muteAudioCallback, playerColorChangeCallback,
             speedChangeCallback, startLengthChangeCallback, toggleGridLinesCallback);
@@ -158,6 +160,14 @@ export default class GameView {
             return;
         }
 
+        if (this.isPlayerSettingsModalOpen) {
+            if (e.keyCode === ESCAPE_KEYCODE) {
+                e.preventDefault();
+                this._closePlayerSettingsModal();
+            }
+            return;
+        }
+
         if (!this.isChangingName) {
             this.keyDownCallback(e.keyCode);
         }
@@ -217,6 +227,18 @@ export default class GameView {
     _initEventHandling(botChangeCallback, foodChangeCallback, muteAudioCallback, playerColorChangeCallback, speedChangeCallback,
         startLengthChangeCallback, toggleGridLinesCallback) {
         // Player controls
+        const playerSettingsButton = DomHelper.getPlayerSettingsButton();
+        if (playerSettingsButton) {
+            playerSettingsButton.addEventListener('click', this._openPlayerSettingsModal.bind(this));
+        }
+        const playerSettingsCloseButton = DomHelper.getPlayerSettingsCloseButton();
+        if (playerSettingsCloseButton) {
+            playerSettingsCloseButton.addEventListener('click', this._closePlayerSettingsModal.bind(this));
+        }
+        const playerSettingsBackdrop = DomHelper.getPlayerSettingsBackdrop();
+        if (playerSettingsBackdrop) {
+            playerSettingsBackdrop.addEventListener('click', this._closePlayerSettingsModal.bind(this));
+        }
         DomHelper.getChangeColorButton().addEventListener('click', playerColorChangeCallback);
         DomHelper.getChangeNameButton().addEventListener('click', this._handleChangeNameButtonClick.bind(this));
         DomHelper.getPlayerNameElement().addEventListener('blur', this._saveNewPlayerName.bind(this));
@@ -265,6 +287,30 @@ export default class GameView {
     _handleFullScreenChange(isFullScreen) {
         if (this.fullScreenChangedCallback) {
             this.fullScreenChangedCallback(isFullScreen);
+        }
+    }
+
+    _openPlayerSettingsModal() {
+        DomHelper.showPlayerSettingsModal();
+        this.isPlayerSettingsModalOpen = true;
+        const nameElement = DomHelper.getPlayerNameElement();
+        if (nameElement) {
+            nameElement.focus();
+        }
+    }
+
+    _closePlayerSettingsModal() {
+        DomHelper.hidePlayerSettingsModal();
+        this.isPlayerSettingsModalOpen = false;
+        if (this.isChangingName) {
+            DomHelper.setChangeNameButtonText('Alterar Nome');
+            DomHelper.setPlayerNameElementReadOnly(true);
+            this.isChangingName = false;
+        }
+        DomHelper.hideInvalidPlayerNameLabel();
+        const settingsButton = DomHelper.getPlayerSettingsButton();
+        if (settingsButton) {
+            settingsButton.focus();
         }
     }
 

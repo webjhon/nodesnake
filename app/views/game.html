@@ -19,7 +19,10 @@
                         <label class="nav-label">Você está jogando como <input id="player-name" readonly="readonly" maxlength="10"></input></label>
                         <div class="nav-button-bar">
                             <a href="#top" id="play-or-watch-button" title="Assistir ou voltar ao jogo">Assistir</a>
-                            <a href="#playerSettings" title="Ir para as configurações">Configurações</a>
+                            <button id="player-settings-button" class="nav-icon-button" type="button" title="Abrir configurações do jogador">
+                                <span aria-hidden="true">⚙</span>
+                                <span class="sr-only">Configurações</span>
+                            </button>
                             <button id="full-screen-button" title="Entrar em modo tela cheia"></button>
                         </div>
                     </div>
@@ -52,31 +55,40 @@
                         </div>
                     </aside>
                 </section>
-                <section id="playerSettings" class="settings-menu">
-                    <fieldset>
-                        <legend>Configurações do Jogador</legend>
-                        <p class="subtitle-text">Personalize sua identidade e crie uma experiência imersiva</p>
-                        <div class="divider"></div>
-                        <label id="invalid-player-name-label">Digite um nome válido (máximo de 10 caracteres)</label>
-                        <ul class="text-button-list">
-                            <li><input id="volumeSlider" type="range" min="0" max="1" step="0.2" value="1"></input><img src="assets/volume-icon.png" class="volume-icon"></img></li>
-                            <li><button id="toggleSoundButton" class="options-text-button" title="Silenciar ou ativar o som">Silenciar</button></li>
-                        </ul>
-                        <ul class="text-button-list">
-                            <li><button id="changePlayerNameButton" class="options-text-button" title="Alterar seu nome">Alterar Nome</button></li>
-                            <li><button id="changePlayerColorButton" class="options-text-button" title="Alterar a cor da sua cobra">Alterar Cor</button></li>
-                            <li><button id="toggleGridLinesButton" class="options-text-button" title="Mostrar ou ocultar linhas da grade">Mostrar/Ocultar Grade</button></li>
-                            <li><label for="image-upload" class="image-upload-label" title="Personalize sua cobra enviando uma imagem (ela será redimensionada)">Alterar Imagem da Cobra<input type="file" id="image-upload" accept="image/*"/></label></li>
-                            <li><button id="clearUploadedImageButton" class="options-text-button" title="Remover a imagem enviada da cobra">Remover Imagem</button></li>
-                            <li><label for="background-image-upload" class="image-upload-label" title="Enviar uma imagem de fundo">Alterar Imagem de Fundo<input type="file" id="background-image-upload" accept="image/*"/></label></li>
-                            <li><button id="clearUploadedBackgroundImageButton" class="options-text-button"  title="Remover a imagem de fundo enviada">Remover Imagem</button></li>
-                            <li class="preset-skin-section">
-                                <div class="preset-skin-heading">Skins pré-definidas</div>
-                                <div id="preset-skin-list" class="preset-skin-gallery"></div>
-                            </li>
-                        </ul>
-                    </fieldset>
-                </section>
+                <div id="player-settings-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="player-settings-title">
+                    <div id="player-settings-backdrop" class="modal-backdrop" data-close="player-settings"></div>
+                    <div class="modal-dialog">
+                        <section id="playerSettings" class="settings-menu modal-content">
+                            <button type="button" id="player-settings-close-button" class="modal-close-button" title="Fechar configurações">
+                                <span aria-hidden="true">×</span>
+                                <span class="sr-only">Fechar</span>
+                            </button>
+                            <fieldset>
+                                <legend id="player-settings-title">Configurações do Jogador</legend>
+                                <p class="subtitle-text">Personalize sua identidade e crie uma experiência imersiva</p>
+                                <div class="divider"></div>
+                                <label id="invalid-player-name-label">Digite um nome válido (máximo de 10 caracteres)</label>
+                                <ul class="text-button-list">
+                                    <li><input id="volumeSlider" type="range" min="0" max="1" step="0.2" value="1"></input><img src="assets/volume-icon.png" class="volume-icon"></img></li>
+                                    <li><button id="toggleSoundButton" class="options-text-button" title="Silenciar ou ativar o som">Silenciar</button></li>
+                                </ul>
+                                <ul class="text-button-list">
+                                    <li><button id="changePlayerNameButton" class="options-text-button" title="Alterar seu nome">Alterar Nome</button></li>
+                                    <li><button id="changePlayerColorButton" class="options-text-button" title="Alterar a cor da sua cobra">Alterar Cor</button></li>
+                                    <li><button id="toggleGridLinesButton" class="options-text-button" title="Mostrar ou ocultar linhas da grade">Mostrar/Ocultar Grade</button></li>
+                                    <li><label for="image-upload" class="image-upload-label" title="Personalize sua cobra enviando uma imagem (ela será redimensionada)">Alterar Imagem da Cobra<input type="file" id="image-upload" accept="image/*"/></label></li>
+                                    <li><button id="clearUploadedImageButton" class="options-text-button" title="Remover a imagem enviada da cobra">Remover Imagem</button></li>
+                                    <li><label for="background-image-upload" class="image-upload-label" title="Enviar uma imagem de fundo">Alterar Imagem de Fundo<input type="file" id="background-image-upload" accept="image/*"/></label></li>
+                                    <li><button id="clearUploadedBackgroundImageButton" class="options-text-button"  title="Remover a imagem de fundo enviada">Remover Imagem</button></li>
+                                    <li class="preset-skin-section">
+                                        <div class="preset-skin-heading">Skins pré-definidas</div>
+                                        <div id="preset-skin-list" class="preset-skin-gallery"></div>
+                                    </li>
+                                </ul>
+                            </fieldset>
+                        </section>
+                    </div>
+                </div>
                 <section id="adminControls" class="settings-menu">
                     <fieldset>
                         <legend>Controles do Administrador</legend>
