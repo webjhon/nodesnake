@@ -41,8 +41,8 @@ const ServerConfig = {
         PLAYER_DROP: {
             TYPE: 'PLAYER_DROP',
             COLOR: 'white',
-            POINTS: 30,
-            GROWTH: 30,
+            POINTS: 6,
+            GROWTH: 6,
         },
     },
     IO: {
