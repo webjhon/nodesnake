@@ -78,7 +78,7 @@ export default class GameController {
             if (player.segments.length === 0) {
                 continue;
             }
-            const isLocalPlayer = `/#${this.socket.id}` === player.id;
+            const isLocalPlayer = this._isLocalPlayerId(player.id);
             if (isLocalPlayer) {
                 if (this.localPlayerLastMoveCounter === null ||
                         player.moveCounter < this.localPlayerLastMoveCounter ||
@@ -289,7 +289,7 @@ export default class GameController {
         if (!this.socket) {
             return null;
         }
-        return this.players.find(player => `/#${this.socket.id}` === player.id) || null;
+        return this.players.find(player => this._isLocalPlayerId(player.id)) || null;
     }
 
     _getWorldCenter() {
@@ -320,5 +320,23 @@ export default class GameController {
             this.audioController.playDeathSound.bind(this.audioController));
         this.socket.on(ClientConfig.IO.INCOMING.NOTIFICATION.YOU_MADE_A_KILL,
             this.audioController.playKillSound.bind(this.audioController));
+    }
+
+    _isLocalPlayerId(playerId) {
+        if (!this.socket || !playerId) {
+            return false;
+        }
+        const socketId = this.socket.id;
+        if (!socketId) {
+            return false;
+        }
+        if (playerId === socketId) {
+            return true;
+        }
+        const namespacedSocketId = `/#${socketId}`;
+        if (playerId === namespacedSocketId) {
+            return true;
+        }
+        return socketId === `/#${playerId}`;
     }
 }
