@@ -222,7 +222,7 @@ export default class GameView {
         DomHelper.getPlayOrWatchButton().addEventListener('click', this._handlePlayOrWatchButtonClick.bind(this));
         DomHelper.getToggleGridLinesButton().addEventListener('click', toggleGridLinesCallback);
         DomHelper.getToggleSoundButton().addEventListener('click', muteAudioCallback);
-        DomHelper.getFullScreenButton().addEventListener('click', DomHelper.toggleFullScreenMode);
+        DomHelper.getFullScreenButton().addEventListener('click', () => DomHelper.toggleFullScreenMode());
         window.addEventListener('keydown', this._handleKeyDown.bind(this), true);
 
         // Admin controls
