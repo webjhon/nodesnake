@@ -3,6 +3,7 @@ import ClientConfig from '../config/client-config.js';
 import FoodAppearanceConfig from '../config/food-appearance-config.js';
 
 const FOOD_EMOJI_FONT_STACK = '"Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+const FOOD_DRAW_SCALE = 1.25;
 
 /**
  * Handles all requests related to the canvas
@@ -92,8 +93,8 @@ export default class CanvasView {
 
         const x = coordinate.x * this.squareSizeInPixels;
         const y = coordinate.y * this.squareSizeInPixels;
-        this.context.drawImage(sprite, x - (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2),
-            this.squareSizeInPixels, this.squareSizeInPixels);
+        const size = this.squareSizeInPixels * FOOD_DRAW_SCALE;
+        this.context.drawImage(sprite, x - (size / 2), y - (size / 2), size, size);
     }
 
     drawSquare(coordinate, color) {
