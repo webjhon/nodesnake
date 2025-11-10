@@ -1,4 +1,8 @@
+/* global document */
 import ClientConfig from '../config/client-config.js';
+import FoodAppearanceConfig from '../config/food-appearance-config.js';
+
+const FOOD_EMOJI_FONT_STACK = '"Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
 
 /**
  * Handles all requests related to the canvas
@@ -17,6 +21,7 @@ export default class CanvasView {
         this.showGridLines = false;
         this.boundResizeHandler = null;
         this.playerImageCache = new Map();
+        this.foodSpriteCache = new Map();
         this._initializeClickListeners(canvas, canvasClickHandler);
     }
 
@@ -76,6 +81,19 @@ export default class CanvasView {
         for (const coordinate of coordinates) {
             this.drawSquare(coordinate, color);
         }
+    }
+
+    drawFood(coordinate, appearanceId, fallbackColor) {
+        const sprite = this._getFoodSprite(appearanceId, fallbackColor);
+        if (!sprite) {
+            this.drawSquare(coordinate, fallbackColor || 'white');
+            return;
+        }
+
+        const x = coordinate.x * this.squareSizeInPixels;
+        const y = coordinate.y * this.squareSizeInPixels;
+        this.context.drawImage(sprite, x - (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2),
+            this.squareSizeInPixels, this.squareSizeInPixels);
     }
 
     drawSquare(coordinate, color) {
@@ -166,6 +184,97 @@ export default class CanvasView {
         }
 
         this.context.restore();
+    }
+
+    _getFoodSprite(appearanceId, fallbackColor) {
+        if (!appearanceId) {
+            return null;
+        }
+        if (this.foodSpriteCache.has(appearanceId)) {
+            return this.foodSpriteCache.get(appearanceId);
+        }
+
+        const appearance = FoodAppearanceConfig[appearanceId];
+        if (!appearance) {
+            return null;
+        }
+
+        const offscreen = document.createElement('canvas');
+        const baseSize = 128;
+        offscreen.width = baseSize;
+        offscreen.height = baseSize;
+        const ctx = offscreen.getContext('2d');
+
+        const center = baseSize / 2;
+        const radius = baseSize * 0.42;
+        const backgroundColor = appearance.backgroundColor || fallbackColor || '#ffffff';
+        const borderColor = appearance.borderColor || 'rgba(0, 0, 0, 0.25)';
+        const glossColor = appearance.glossColor || 'rgba(255, 255, 255, 0.5)';
+
+        ctx.save();
+        ctx.translate(center, center);
+
+        const gradient = ctx.createRadialGradient(0, -radius * 0.4, radius * 0.2, 0, 0, radius);
+        gradient.addColorStop(0, this._lightenColor(backgroundColor, 0.2));
+        gradient.addColorStop(0.6, backgroundColor);
+        gradient.addColorStop(1, this._darkenColor(backgroundColor, 0.1));
+
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(0, 0, radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        ctx.lineWidth = baseSize * 0.05;
+        ctx.strokeStyle = borderColor;
+        ctx.stroke();
+
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillStyle = glossColor;
+        ctx.beginPath();
+        ctx.ellipse(-radius * 0.2, -radius * 0.5, radius * 0.7, radius * 0.4, Math.PI / 6, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+
+        if (appearance.emoji) {
+            ctx.font = `${Math.floor(baseSize * 0.68)}px ${FOOD_EMOJI_FONT_STACK}`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+            ctx.lineWidth = baseSize * 0.03;
+            ctx.strokeText(appearance.emoji, 0, baseSize * 0.02);
+            ctx.fillText(appearance.emoji, 0, baseSize * 0.02);
+        }
+
+        ctx.restore();
+
+        this.foodSpriteCache.set(appearanceId, offscreen);
+        return offscreen;
+    }
+
+    _lightenColor(color, amount) {
+        return this._adjustColor(color, Math.abs(amount));
+    }
+
+    _darkenColor(color, amount) {
+        return this._adjustColor(color, -Math.abs(amount));
+    }
+
+    _adjustColor(color, amount) {
+        const hexMatch = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(color);
+        if (!hexMatch) {
+            return color;
+        }
+
+        let hex = hexMatch[1];
+        if (hex.length === 3) {
+            hex = hex.split('').map(char => char + char).join('');
+        }
+
+        const r = Math.max(Math.min(parseInt(hex.substr(0, 2), 16) + Math.round(255 * amount), 255), 0);
+        const g = Math.max(Math.min(parseInt(hex.substr(2, 2), 16) + Math.round(255 * amount), 255), 0);
+        const b = Math.max(Math.min(parseInt(hex.substr(4, 2), 16) + Math.round(255 * amount), 255), 0);
+
+        return `rgb(${r}, ${g}, ${b})`;
     }
 
     drawFadingText(textToDraw, turnsToShow) {
