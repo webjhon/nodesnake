@@ -22,7 +22,7 @@ app.get('/', (request, response) => {
 const gameController = new GameController();
 gameController.listen(io);
 
-const SERVER_PORT = process.env.PORT || 3000;
+const SERVER_PORT = process.env.PORT || 4000;
 app.set('port', SERVER_PORT);
 
 // Start Express server
