@@ -35,6 +35,12 @@ class GameControlsService {
     }
 
     static handleKeyDown(player, keyCode) {
+        if (!player) {
+            // Jogadores desconectados ou eliminados podem continuar a enviar eventos por alguns milissegundos.
+            // Antes desta verificação, isso fazia com que tentássemos acessar directionBeforeMove em
+            // "undefined", disparando a exceção observada no servidor.
+            return;
+        }
         const newDirection = KEYCODE_TO_DIRECTION[keyCode];
         if (!newDirection) {
             return;
