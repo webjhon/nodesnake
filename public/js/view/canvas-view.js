@@ -106,6 +106,68 @@ export default class CanvasView {
         this.context.stroke();
     }
 
+    drawSpawnHighlight(coordinate, remainingTimeInMs, totalDurationInMs) {
+        if (!coordinate || remainingTimeInMs <= 0 || totalDurationInMs <= 0) {
+            return;
+        }
+
+        const x = coordinate.x * this.squareSizeInPixels;
+        const y = coordinate.y * this.squareSizeInPixels;
+        const clampedRemaining = Math.max(Math.min(remainingTimeInMs, totalDurationInMs), 0);
+        const elapsed = totalDurationInMs - clampedRemaining;
+        const progress = elapsed / totalDurationInMs;
+        const pulse = 0.5 + 0.5 * Math.sin(progress * Math.PI * 6);
+
+        const maxRadius = this.squareSizeInPixels * 2.8;
+        const minRadius = this.squareSizeInPixels * 1.2;
+        const outerRadius = minRadius + (maxRadius - minRadius) * (0.4 + 0.6 * pulse);
+        const innerRadius = outerRadius * (0.45 + 0.2 * pulse);
+        const opacity = 0.85 - (progress * 0.6);
+        const accentColor = ClientConfig.SPAWN_FLASH_COLOR;
+
+        this.context.save();
+        this.context.translate(x, y);
+        this.context.globalCompositeOperation = 'lighter';
+
+        const gradient = this.context.createRadialGradient(0, 0, innerRadius * 0.2, 0, 0, outerRadius);
+        gradient.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+        gradient.addColorStop(0.45, 'rgba(255, 243, 120, 0.75)');
+        gradient.addColorStop(1, 'rgba(255, 152, 0, 0)');
+
+        this.context.fillStyle = gradient;
+        this.context.beginPath();
+        this.context.arc(0, 0, outerRadius, 0, Math.PI * 2);
+        this.context.fill();
+
+        this.context.lineWidth = this.squareSizeInPixels * (0.55 + 0.35 * pulse);
+        this.context.globalAlpha = opacity;
+        this.context.strokeStyle = accentColor;
+        this.context.shadowColor = accentColor;
+        this.context.shadowBlur = this.squareSizeInPixels * 1.5;
+        this.context.beginPath();
+        this.context.arc(0, 0, innerRadius, 0, Math.PI * 2);
+        this.context.stroke();
+
+        const rays = 10;
+        const rayLength = outerRadius * (1.25 + 0.1 * pulse);
+        const rayFade = Math.max(0, 0.65 - progress * 0.5);
+        if (rayFade > 0) {
+            this.context.lineWidth = this.squareSizeInPixels * 0.18;
+            this.context.globalAlpha = rayFade;
+            this.context.strokeStyle = 'rgba(255, 236, 179, 1)';
+            for (let i = 0; i < rays; i++) {
+                const angle = (Math.PI * 2 / rays) * i + progress * Math.PI * 1.5;
+                const innerPoint = innerRadius * 0.5;
+                this.context.beginPath();
+                this.context.moveTo(Math.cos(angle) * innerPoint, Math.sin(angle) * innerPoint);
+                this.context.lineTo(Math.cos(angle) * rayLength, Math.sin(angle) * rayLength);
+                this.context.stroke();
+            }
+        }
+
+        this.context.restore();
+    }
+
     drawFadingText(textToDraw, turnsToShow) {
         this.context.save();
         this.context.globalAlpha = this._getOpacityFromCounter(textToDraw.counter, turnsToShow);
