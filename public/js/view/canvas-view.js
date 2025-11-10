@@ -3,7 +3,7 @@ import ClientConfig from '../config/client-config.js';
 import FoodAppearanceConfig from '../config/food-appearance-config.js';
 
 const FOOD_EMOJI_FONT_STACK = '"Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
-const FOOD_DRAW_SCALE = 2.4;
+const FOOD_DRAW_SCALE = 1.7;
 
 /**
  * Handles all requests related to the canvas
