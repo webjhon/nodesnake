@@ -16,6 +16,7 @@ export default class CanvasView {
         this.imageUploadCanvas = imageUploadCanvas;
         this.showGridLines = false;
         this.boundResizeHandler = null;
+        this.playerImageCache = new Map();
         this._initializeClickListeners(canvas, canvasClickHandler);
     }
 
@@ -52,10 +53,23 @@ export default class CanvasView {
     drawImage(coordinate, base64Image) {
         const x = coordinate.x * this.squareSizeInPixels;
         const y = coordinate.y * this.squareSizeInPixels;
-        const image = new Image();
-        image.src = base64Image;
-        this.context.drawImage(image, x - (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2),
-            this.squareSizeInPixels, this.squareSizeInPixels);
+        let image = this.playerImageCache.get(base64Image);
+        if (!image) {
+            image = new Image();
+            image.src = base64Image;
+            this.playerImageCache.set(base64Image, image);
+        }
+
+        const draw = () => {
+            this.context.drawImage(image, x - (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2),
+                this.squareSizeInPixels, this.squareSizeInPixels);
+        };
+
+        if (image.complete && image.naturalWidth) {
+            draw();
+        } else {
+            image.addEventListener('load', draw, { once: true });
+        }
     }
 
     drawSquares(coordinates, color) {
