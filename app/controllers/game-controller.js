@@ -115,6 +115,7 @@ class GameController {
             food: this.foodService.getFood(),
             playerStats: this.playerStatBoard,
             walls: this.boardOccupancyService.getWallCoordinates(),
+            bounds: this.boardOccupancyService.getWorldBounds(),
             speed: this.adminService.getGameSpeed(),
             numberOfBots: this.adminService.getBotIds().length,
             startLength: this.adminService.getPlayerStartLength(),
