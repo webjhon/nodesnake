@@ -47,7 +47,9 @@ export default class GameController {
         for (const foodId of Object.keys(this.food)) {
             if ({}.hasOwnProperty.call(this.food, foodId)) {
                 const food = this.food[foodId];
-                if (food.appearanceId) {
+                if (food.base64Image) {
+                    this.canvasView.drawImage(food.coordinate, food.base64Image);
+                } else if (food.appearanceId) {
                     this.canvasView.drawFood(food.coordinate, food.appearanceId, food.color);
                 } else {
                     this.canvasView.drawSquare(food.coordinate, food.color);

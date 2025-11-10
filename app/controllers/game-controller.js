@@ -32,7 +32,8 @@ class GameController {
             this.nameService, this.notificationService);
         this.imageService = new ImageService(this.playerContainer, this.playerStatBoard, this.notificationService);
         this.playerService = new PlayerService(this.playerContainer, this.playerStatBoard, this.boardOccupancyService,
-            this.imageService, this.nameService, this.notificationService, this.runGameCycle.bind(this));
+            this.foodService, this.imageService, this.nameService, this.notificationService,
+            this.runGameCycle.bind(this));
         this.adminService = new AdminService(this.playerContainer, this.foodService, this.nameService,
             this.notificationService, this.playerService);
         this.playerService.init(this.adminService.getPlayerStartLength.bind(this.adminService));

@@ -38,6 +38,12 @@ const ServerConfig = {
             GROWTH: 1,
             SPAWN_RATE: 0.05,
         },
+        PLAYER_DROP: {
+            TYPE: 'PLAYER_DROP',
+            COLOR: 'white',
+            POINTS: 6,
+            GROWTH: 6,
+        },
     },
     IO: {
         DEFAULT_CONNECTION: 'connection',
