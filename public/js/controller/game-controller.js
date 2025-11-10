@@ -273,8 +273,10 @@ export default class GameController {
             return 1;
         }
         const normalizedLength = Math.max(length, 1);
-        const zoom = 1 / (1 + Math.log(normalizedLength) * 0.25);
-        return this.canvasView.clampZoom(zoom);
+        const growthFactor = Math.log(normalizedLength);
+        const zoomReduction = growthFactor * 0.2;
+        const targetZoom = this.canvasView.maxZoom - zoomReduction;
+        return this.canvasView.clampZoom(targetZoom);
     }
 
     _getLocalPlayer() {
