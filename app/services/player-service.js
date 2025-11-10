@@ -13,11 +13,12 @@ const ValidationService = require('../services/validation-service');
  */
 class PlayerService {
 
-    constructor(playerContainer, playerStatBoard, boardOccupancyService, imageService,
+    constructor(playerContainer, playerStatBoard, boardOccupancyService, foodService, imageService,
             nameService, notificationService, runGameCycle) {
         this.playerContainer = playerContainer;
         this.playerStatBoard = playerStatBoard;
         this.boardOccupancyService = boardOccupancyService;
+        this.foodService = foodService;
         this.imageService = imageService;
         this.nameService = nameService;
         this.notificationService = notificationService;
@@ -121,6 +122,7 @@ class PlayerService {
         for (const killReport of killReports) {
             if (killReport.isSingleKill()) {
                 const victim = this.playerContainer.getPlayer(killReport.victimId);
+                const victimSegments = victim.getSegments();
                 if (killReport.killerId === killReport.victimId) {
                     this.notificationService.broadcastSuicide(victim.name, victim.color);
                 } else {
@@ -128,13 +130,14 @@ class PlayerService {
                     this.playerStatBoard.increaseScore(killReport.killerId);
                     this.playerStatBoard.stealScore(killReport.killerId, victim.id);
                     // Steal victim's length
-                    this.playerContainer.getPlayer(killReport.killerId).grow(victim.getSegments().length);
+                    this.playerContainer.getPlayer(killReport.killerId).grow(victimSegments.length);
                     const killer = this.playerContainer.getPlayer(killReport.killerId);
                     this.notificationService.broadcastKill(killer.name, victim.name, killer.color, victim.color,
-                        victim.getSegments().length);
+                        victimSegments.length);
                     this.notificationService.notifyPlayerMadeAKill(killReport.killerId);
+                    this.foodService.spawnPlayerRemainsFood(victim, victimSegments);
                 }
-                this.boardOccupancyService.removePlayerOccupancy(victim.id, victim.getSegments());
+                this.boardOccupancyService.removePlayerOccupancy(victim.id, victimSegments);
                 victim.clearAllSegments();
                 this.playerContainer.addPlayerIdToRespawn(victim.id);
                 this.notificationService.notifyPlayerDied(victim.id);
@@ -142,7 +145,9 @@ class PlayerService {
                 const victimSummaries = [];
                 for (const victimId of killReport.getVictimIds()) {
                     const victim = this.playerContainer.getPlayer(victimId);
-                    this.boardOccupancyService.removePlayerOccupancy(victim.id, victim.getSegments());
+                    const victimSegments = victim.getSegments();
+                    this.boardOccupancyService.removePlayerOccupancy(victim.id, victimSegments);
+                    this.foodService.spawnPlayerRemainsFood(victim, victimSegments);
                     victim.clearAllSegments();
                     this.playerContainer.addPlayerIdToRespawn(victim.id);
                     victimSummaries.push({ name: victim.name, color: victim.color });
