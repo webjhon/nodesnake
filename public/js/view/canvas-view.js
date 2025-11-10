@@ -106,6 +106,37 @@ export default class CanvasView {
         this.context.stroke();
     }
 
+    drawSpawnHighlight(coordinate, moveCounter, totalTurns) {
+        if (!coordinate) {
+            return;
+        }
+
+        const x = coordinate.x * this.squareSizeInPixels;
+        const y = coordinate.y * this.squareSizeInPixels;
+        const progress = Math.min(moveCounter / Math.max(totalTurns, 1), 1);
+        const pulse = (Math.sin(moveCounter * Math.PI * 0.5) + 1) / 2; // range 0-1
+        const baseRadius = this.squareSizeInPixels * 1.5;
+        const radius = baseRadius + (this.squareSizeInPixels * 0.75 * pulse);
+        const opacity = (1 - progress) * 0.7;
+
+        this.context.save();
+        this.context.globalAlpha = opacity;
+        this.context.lineWidth = this.squareSizeInPixels * 0.45;
+        this.context.strokeStyle = ClientConfig.SPAWN_FLASH_COLOR;
+        this.context.beginPath();
+        this.context.arc(x, y, radius, 0, Math.PI * 2);
+        this.context.stroke();
+        this.context.restore();
+
+        this.context.save();
+        this.context.globalAlpha = opacity * 0.4;
+        this.context.fillStyle = ClientConfig.SPAWN_FLASH_COLOR;
+        this.context.beginPath();
+        this.context.arc(x, y, radius * 0.7, 0, Math.PI * 2);
+        this.context.fill();
+        this.context.restore();
+    }
+
     drawFadingText(textToDraw, turnsToShow) {
         this.context.save();
         this.context.globalAlpha = this._getOpacityFromCounter(textToDraw.counter, turnsToShow);
