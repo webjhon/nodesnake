@@ -55,11 +55,13 @@ export default class GameController {
             if (player.segments.length === 0) {
                 continue;
             }
-            // Flash around where you have just spawned
+            // Highlight the player's snake for a brief moment after spawning
             if (`/#${this.socket.id}` === player.id &&
-                    player.moveCounter <= ClientConfig.TURNS_TO_FLASH_AFTER_SPAWN &&
-                    player.moveCounter % 2 === 0) {
-                this.canvasView.drawSquareAround(player.segments[0], ClientConfig.SPAWN_FLASH_COLOR);
+                    player.moveCounter <= ClientConfig.TURNS_TO_FLASH_AFTER_SPAWN) {
+                this.canvasView.drawSpawnHighlight(
+                    player.segments[0],
+                    player.moveCounter,
+                    ClientConfig.TURNS_TO_FLASH_AFTER_SPAWN);
             }
 
             if (player.base64Image) {
