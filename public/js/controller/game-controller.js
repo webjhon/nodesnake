@@ -4,6 +4,8 @@ import TextToDraw from '../model/text-to-draw.js';
 import CanvasFactory from '../view/canvas-factory.js';
 import GameView from '../view/game-view.js';
 
+const SEGMENTS_FOR_HALF_ZOOM = 60;
+
 /**
  * Controls all game logic
  */
@@ -29,9 +31,12 @@ export default class GameController {
         this.food = {};
         this.textsToDraw = [];
         this.walls = [];
+        this.worldBounds = null;
         this.isFullScreen = false;
         this.localPlayerSpawnHighlightEndTime = 0;
         this.localPlayerLastMoveCounter = null;
+        this.lastCameraCenter = null;
+        this.lastCameraZoom = null;
     }
 
     connect(io) {
@@ -43,6 +48,16 @@ export default class GameController {
     }
 
     renderGame() {
+        if (!this.canvasView) {
+            return;
+        }
+
+        const localPlayer = this._getLocalPlayer();
+        const cameraSettings = this._calculateCameraSettings(localPlayer);
+        this.canvasView.setCamera(cameraSettings.center, cameraSettings.zoom);
+        this.lastCameraCenter = cameraSettings.center;
+        this.lastCameraZoom = cameraSettings.zoom;
+
         this.canvasView.clear();
         for (const foodId of Object.keys(this.food)) {
             if ({}.hasOwnProperty.call(this.food, foodId)) {
@@ -228,11 +243,63 @@ export default class GameController {
         this.players = gameData.players;
         this.food = gameData.food;
         this.walls = gameData.walls;
+        this.worldBounds = gameData.bounds;
         this.gameView.showFoodAmount(Object.keys(gameData.food).length);
         this.gameView.showSpeed(gameData.speed);
         this.gameView.showStartLength(gameData.startLength);
         this.gameView.showNumberOfBots(gameData.numberOfBots);
         this.gameView.showPlayerStats(gameData.playerStats);
+    }
+
+
+    _calculateCameraSettings(localPlayer) {
+        let center = this.lastCameraCenter || { x: 0, y: 0 };
+        let zoom = this.lastCameraZoom;
+        if (zoom === null || zoom === undefined) {
+            zoom = this.canvasView ? this.canvasView.maxZoom : 1;
+        }
+
+        if (localPlayer && localPlayer.segments && localPlayer.segments.length > 0) {
+            center = localPlayer.segments[0];
+            zoom = this._calculateZoomForPlayer(localPlayer.segments.length);
+        } else if (!this.lastCameraCenter && this.worldBounds && this.canvasView) {
+            center = this._getWorldCenter();
+            const widthSquares = this.worldBounds.maxX - this.worldBounds.minX + 1;
+            const heightSquares = this.worldBounds.maxY - this.worldBounds.minY + 1;
+            const fitZoom = this.canvasView.getZoomToFitSquares(widthSquares, heightSquares);
+            zoom = this.canvasView.clampZoom(fitZoom * 0.9);
+        }
+
+        return { center, zoom };
+    }
+
+    _calculateZoomForPlayer(length) {
+        if (!this.canvasView) {
+            return 1;
+        }
+        const segments = Math.max(length, 1);
+        const additionalSegments = Math.max(segments - 1, 0);
+        const zoomRange = this.canvasView.maxZoom - this.canvasView.minZoom;
+        const falloff = 1 / (1 + (additionalSegments / SEGMENTS_FOR_HALF_ZOOM));
+        const targetZoom = this.canvasView.minZoom + (zoomRange * falloff);
+        return this.canvasView.clampZoom(targetZoom);
+    }
+
+    _getLocalPlayer() {
+        if (!this.socket) {
+            return null;
+        }
+        return this.players.find(player => `/#${this.socket.id}` === player.id) || null;
+    }
+
+    _getWorldCenter() {
+        if (!this.worldBounds) {
+            return this.lastCameraCenter || { x: 0, y: 0 };
+        }
+        return {
+            x: (this.worldBounds.minX + this.worldBounds.maxX) / 2,
+            y: (this.worldBounds.minY + this.worldBounds.maxY) / 2,
+        };
     }
 
 
