@@ -24,9 +24,9 @@ export default class CanvasView {
         this.playerImageCache = new Map();
         this.foodSpriteCache = new Map();
         this.cameraCenter = { x: 0, y: 0 };
-        this.zoom = 1;
         this.minZoom = 0.25;
-        this.maxZoom = 1.5;
+        this.maxZoom = 3.5;
+        this.zoom = this.maxZoom;
         this._initializeClickListeners(canvas, canvasClickHandler);
     }
 

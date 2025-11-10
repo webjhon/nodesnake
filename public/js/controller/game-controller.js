@@ -4,6 +4,8 @@ import TextToDraw from '../model/text-to-draw.js';
 import CanvasFactory from '../view/canvas-factory.js';
 import GameView from '../view/game-view.js';
 
+const SEGMENTS_FOR_HALF_ZOOM = 60;
+
 /**
  * Controls all game logic
  */
@@ -33,8 +35,8 @@ export default class GameController {
         this.isFullScreen = false;
         this.localPlayerSpawnHighlightEndTime = 0;
         this.localPlayerLastMoveCounter = null;
-        this.lastCameraCenter = { x: 0, y: 0 };
-        this.lastCameraZoom = 1;
+        this.lastCameraCenter = null;
+        this.lastCameraZoom = null;
     }
 
     connect(io) {
@@ -252,12 +254,15 @@ export default class GameController {
 
     _calculateCameraSettings(localPlayer) {
         let center = this.lastCameraCenter || { x: 0, y: 0 };
-        let zoom = this.lastCameraZoom || 1;
+        let zoom = this.lastCameraZoom;
+        if (zoom === null || zoom === undefined) {
+            zoom = this.canvasView ? this.canvasView.maxZoom : 1;
+        }
 
         if (localPlayer && localPlayer.segments && localPlayer.segments.length > 0) {
             center = localPlayer.segments[0];
             zoom = this._calculateZoomForPlayer(localPlayer.segments.length);
-        } else if (this.worldBounds && this.canvasView) {
+        } else if (!this.lastCameraCenter && this.worldBounds && this.canvasView) {
             center = this._getWorldCenter();
             const widthSquares = this.worldBounds.maxX - this.worldBounds.minX + 1;
             const heightSquares = this.worldBounds.maxY - this.worldBounds.minY + 1;
@@ -272,10 +277,11 @@ export default class GameController {
         if (!this.canvasView) {
             return 1;
         }
-        const normalizedLength = Math.max(length, 1);
-        const growthFactor = Math.log(normalizedLength);
-        const zoomReduction = growthFactor * 0.2;
-        const targetZoom = this.canvasView.maxZoom - zoomReduction;
+        const segments = Math.max(length, 1);
+        const additionalSegments = Math.max(segments - 1, 0);
+        const zoomRange = this.canvasView.maxZoom - this.canvasView.minZoom;
+        const falloff = 1 / (1 + (additionalSegments / SEGMENTS_FOR_HALF_ZOOM));
+        const targetZoom = this.canvasView.minZoom + (zoomRange * falloff);
         return this.canvasView.clampZoom(targetZoom);
     }
 
