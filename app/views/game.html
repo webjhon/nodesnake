@@ -58,71 +58,79 @@
                 <div id="player-settings-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="player-settings-title">
                     <div id="player-settings-backdrop" class="modal-backdrop" data-close="player-settings"></div>
                     <div class="modal-dialog">
-                        <section id="playerSettings" class="settings-menu modal-content">
+                        <section id="playerSettings" class="settings-menu modal-content player-settings">
                             <button type="button" id="player-settings-close-button" class="modal-close-button" title="Fechar configurações">
                                 <span aria-hidden="true">×</span>
                                 <span class="sr-only">Fechar</span>
                             </button>
-                            <fieldset>
-                                <legend id="player-settings-title">Configurações do Jogador</legend>
-                                <p class="subtitle-text">Personalize sua identidade e crie uma experiência imersiva</p>
-                                <div class="divider"></div>
-                                <div class="settings-grid">
-                                    <section class="settings-section">
-                                        <header class="settings-section-header">
-                                            <h3 class="settings-section-title">Áudio</h3>
-                                            <p class="settings-section-description">Ajuste o volume do jogo e gerencie o áudio rapidamente.</p>
-                                        </header>
-                                        <div class="settings-stack">
-                                            <div class="range-field">
-                                                <label class="control-label" for="volumeSlider">Nível de volume</label>
-                                                <div class="range-wrapper">
-                                                    <input id="volumeSlider" type="range" min="0" max="1" step="0.2" value="1"></input>
-                                                    <img src="assets/volume-icon.png" class="volume-icon" alt=""></img>
+                            <fieldset class="player-settings__fieldset">
+                                <legend id="player-settings-title" class="player-settings__title">Configurações do Jogador</legend>
+                                <p class="player-settings__subtitle">Ajuste identidade, estilo e ambiente para pilotar com personalidade.</p>
+                                <div class="player-settings__body">
+                                    <nav class="player-settings__nav" aria-label="Categorias de configurações">
+                                        <a class="player-settings__nav-link" href="#settings-audio">Áudio</a>
+                                        <a class="player-settings__nav-link" href="#settings-identidade">Identidade</a>
+                                        <a class="player-settings__nav-link" href="#settings-estilo">Estilo</a>
+                                        <a class="player-settings__nav-link" href="#settings-ambiente">Ambiente</a>
+                                        <a class="player-settings__nav-link" href="#settings-presets">Skins</a>
+                                    </nav>
+                                    <div class="player-settings__content" tabindex="0">
+                                        <section id="settings-audio" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Áudio</h3>
+                                                <p class="settings-section-description">Modere o som do jogo rapidamente.</p>
+                                            </header>
+                                            <div class="settings-stack">
+                                                <div class="range-field">
+                                                    <label class="control-label" for="volumeSlider">Nível de volume</label>
+                                                    <div class="range-wrapper">
+                                                        <input id="volumeSlider" type="range" min="0" max="1" step="0.2" value="1"></input>
+                                                        <img src="assets/volume-icon.png" class="volume-icon" alt=""></img>
+                                                    </div>
                                                 </div>
+                                                <button id="toggleSoundButton" class="options-text-button" title="Silenciar ou ativar o som">Silenciar</button>
                                             </div>
-                                            <button id="toggleSoundButton" class="options-text-button" title="Silenciar ou ativar o som">Silenciar</button>
-                                        </div>
-                                    </section>
-                                    <section class="settings-section">
-                                        <header class="settings-section-header">
-                                            <h3 class="settings-section-title">Identidade</h3>
-                                            <p class="settings-section-description">Escolha como os outros pilotos veem você.</p>
-                                        </header>
-                                        <div class="settings-action-list">
-                                            <button id="changePlayerNameButton" class="options-text-button" title="Alterar seu nome">Alterar Nome</button>
-                                        </div>
-                                        <label id="invalid-player-name-label" class="settings-feedback" role="alert">Digite um nome válido (máximo de 10 caracteres)</label>
-                                    </section>
-                                    <section class="settings-section">
-                                        <header class="settings-section-header">
-                                            <h3 class="settings-section-title">Estilo da Cobra</h3>
-                                            <p class="settings-section-description">Defina cores e texturas exclusivas para sua nave.</p>
-                                        </header>
-                                        <div class="settings-action-list">
-                                            <button id="changePlayerColorButton" class="options-text-button" title="Alterar a cor da sua cobra">Alterar Cor</button>
-                                            <label for="image-upload" class="image-upload-label" title="Personalize sua cobra enviando uma imagem (ela será redimensionada)">Alterar Imagem da Cobra<input type="file" id="image-upload" accept="image/*"/></label>
-                                            <button id="clearUploadedImageButton" class="options-text-button" title="Remover a imagem enviada da cobra">Remover Imagem</button>
-                                        </div>
-                                    </section>
-                                    <section class="settings-section">
-                                        <header class="settings-section-header">
-                                            <h3 class="settings-section-title">Ambiente de jogo</h3>
-                                            <p class="settings-section-description">Personalize a arena holográfica ao seu redor.</p>
-                                        </header>
-                                        <div class="settings-action-list">
-                                            <button id="toggleGridLinesButton" class="options-text-button" title="Mostrar ou ocultar linhas da grade">Mostrar/Ocultar Grade</button>
-                                            <label for="background-image-upload" class="image-upload-label" title="Enviar uma imagem de fundo">Alterar Imagem de Fundo<input type="file" id="background-image-upload" accept="image/*"/></label>
-                                            <button id="clearUploadedBackgroundImageButton" class="options-text-button"  title="Remover a imagem de fundo enviada">Remover Imagem</button>
-                                        </div>
-                                    </section>
-                                    <section class="settings-section settings-section--full">
-                                        <header class="settings-section-header">
-                                            <div class="preset-skin-heading">Skins pré-definidas</div>
-                                            <p class="settings-section-description">Escolha uma combinação curada de cores e efeitos instantaneamente.</p>
-                                        </header>
-                                        <div id="preset-skin-list" class="preset-skin-gallery"></div>
-                                    </section>
+                                        </section>
+                                        <section id="settings-identidade" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Identidade</h3>
+                                                <p class="settings-section-description">Defina como os outros pilotos verão você.</p>
+                                            </header>
+                                            <div class="settings-action-list">
+                                                <button id="changePlayerNameButton" class="options-text-button" title="Alterar seu nome">Alterar Nome</button>
+                                            </div>
+                                            <label id="invalid-player-name-label" class="settings-feedback" role="alert">Digite um nome válido (máximo de 10 caracteres)</label>
+                                        </section>
+                                        <section id="settings-estilo" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Estilo da Cobra</h3>
+                                                <p class="settings-section-description">Escolha cores e texturas personalizadas.</p>
+                                            </header>
+                                            <div class="settings-action-list">
+                                                <button id="changePlayerColorButton" class="options-text-button" title="Alterar a cor da sua cobra">Alterar Cor</button>
+                                                <label for="image-upload" class="image-upload-label" title="Personalize sua cobra enviando uma imagem (ela será redimensionada)">Alterar Imagem da Cobra<input type="file" id="image-upload" accept="image/*"/></label>
+                                                <button id="clearUploadedImageButton" class="options-text-button" title="Remover a imagem enviada da cobra">Remover Imagem</button>
+                                            </div>
+                                        </section>
+                                        <section id="settings-ambiente" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Ambiente de Jogo</h3>
+                                                <p class="settings-section-description">Personalize a arena holográfica.</p>
+                                            </header>
+                                            <div class="settings-action-list">
+                                                <button id="toggleGridLinesButton" class="options-text-button" title="Mostrar ou ocultar linhas da grade">Mostrar/Ocultar Grade</button>
+                                                <label for="background-image-upload" class="image-upload-label" title="Enviar uma imagem de fundo">Alterar Imagem de Fundo<input type="file" id="background-image-upload" accept="image/*"/></label>
+                                                <button id="clearUploadedBackgroundImageButton" class="options-text-button" title="Remover a imagem de fundo enviada">Remover Imagem</button>
+                                            </div>
+                                        </section>
+                                        <section id="settings-presets" class="settings-section">
+                                            <header class="settings-section-header">
+                                                <h3 class="settings-section-title">Skins pré-definidas</h3>
+                                                <p class="settings-section-description">Escolha combinações prontas instantaneamente.</p>
+                                            </header>
+                                            <div id="preset-skin-list" class="preset-skin-gallery"></div>
+                                        </section>
+                                    </div>
                                 </div>
                             </fieldset>
                         </section>
