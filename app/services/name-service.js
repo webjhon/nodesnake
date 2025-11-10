@@ -63,11 +63,11 @@ class NameService {
     }
 
     _generateFoodId() {
-        return `Food ${this._getRandomNumber()}${this._getRandomNumber()}${this._getRandomNumber()}${this._getRandomNumber()}`;
+        return `Comida ${this._getRandomNumber()}${this._getRandomNumber()}${this._getRandomNumber()}${this._getRandomNumber()}`;
     }
 
     _generatePlayerName() {
-        return `Player ${this._getRandomNumber()}${this._getRandomNumber()}${this._getRandomNumber()}`;
+        return `Jogador ${this._getRandomNumber()}${this._getRandomNumber()}${this._getRandomNumber()}`;
     }
 
     _getRandomNumber() {

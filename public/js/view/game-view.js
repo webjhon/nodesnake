@@ -42,9 +42,9 @@ export default class GameView {
     setMuteStatus(isMuted) {
         let text;
         if (isMuted) {
-            text = 'Unmute';
+            text = 'Ativar som';
         } else {
-            text = 'Mute';
+            text = 'Silenciar';
         }
         DomHelper.setToggleSoundButtonText(text);
     }
@@ -54,9 +54,9 @@ export default class GameView {
     }
 
     showKillMessage(killerName, victimName, killerColor, victimColor, victimLength) {
-        this.setKillMessageWithTimer(`<span style='color: ${killerColor}'>${killerName}</span> killed ` +
+        this.setKillMessageWithTimer(`<span style='color: ${killerColor}'>${killerName}</span> eliminou ` +
             `<span style='color: ${victimColor}'>${victimName}</span>` +
-            ` and grew by <span style='color: ${killerColor}'>${victimLength}</span>`);
+            ` e cresceu <span style='color: ${killerColor}'>${victimLength}</span> segmentos`);
     }
 
     showKilledEachOtherMessage(victimSummaries) {
@@ -64,15 +64,15 @@ export default class GameView {
         for (const victimSummary of victimSummaries) {
             victims += `<span style='color: ${victimSummary.color}'>${victimSummary.name}</span> `;
         }
-        this.setKillMessageWithTimer(`${victims} have killed each other`);
+        this.setKillMessageWithTimer(`${victims} se eliminaram`);
     }
 
     showRanIntoWallMessage(playerName, playerColor) {
-        this.setKillMessageWithTimer(`<span style='color: ${playerColor}'>${playerName}</span> ran into a wall`);
+        this.setKillMessageWithTimer(`<span style='color: ${playerColor}'>${playerName}</span> bateu na parede`);
     }
 
     showSuicideMessage(victimName, victimColor) {
-        this.setKillMessageWithTimer(`<span style='color: ${victimColor}'>${victimName}</span> committed suicide`);
+        this.setKillMessageWithTimer(`<span style='color: ${victimColor}'>${victimName}</span> cometeu suicídio`);
     }
 
     showNotification(notification, playerColor) {
@@ -88,11 +88,11 @@ export default class GameView {
 
     showPlayerStats(playerStats) {
         let formattedScores = '<div class="player-stats-header"><span class="image"></span>' +
-            '<span class="name">Name</span>' +
-            '<span class="stat">Score</span>' +
-            '<span class="stat">High</span>' +
-            '<span class="stat">Kills</span>' +
-            '<span class="stat">Deaths</span></div>';
+            '<span class="name">Nome</span>' +
+            '<span class="stat">Pontuação</span>' +
+            '<span class="stat">Recorde</span>' +
+            '<span class="stat">Eliminações</span>' +
+            '<span class="stat">Mortes</span></div>';
         for (const playerStat of playerStats) {
             let playerImageElement = '';
             if (playerStat.base64Image) {
@@ -131,7 +131,7 @@ export default class GameView {
         if (this.isChangingName) {
             this._saveNewPlayerName();
         } else {
-            DomHelper.setChangeNameButtonText('Save');
+            DomHelper.setChangeNameButtonText('Salvar');
             DomHelper.setPlayerNameElementReadOnly(false);
             DomHelper.getPlayerNameElement().select();
             this.isChangingName = true;
@@ -185,11 +185,11 @@ export default class GameView {
 
     _handlePlayOrWatchButtonClick() {
         const command = DomHelper.getPlayOrWatchButton().textContent;
-        if (command === 'Play') {
-            DomHelper.setPlayOrWatchButtonText('Watch');
+        if (command === 'Jogar') {
+            DomHelper.setPlayOrWatchButtonText('Assistir');
             this.joinGameCallback();
         } else {
-            DomHelper.setPlayOrWatchButtonText('Play');
+            DomHelper.setPlayOrWatchButtonText('Jogar');
             this.spectateGameCallback();
         }
     }
@@ -198,7 +198,7 @@ export default class GameView {
         const playerName = DomHelper.getPlayerNameElement().value;
         if (playerName && playerName.trim().length > 0 && playerName.length <= ClientConfig.MAX_NAME_LENGTH) {
             this.playerNameUpdatedCallback(playerName);
-            DomHelper.setChangeNameButtonText('Change Name');
+            DomHelper.setChangeNameButtonText('Alterar Nome');
             DomHelper.setPlayerNameElementReadOnly(true);
             this.isChangingName = false;
             DomHelper.hideInvalidPlayerNameLabel();

@@ -37,7 +37,7 @@ class PlayerService {
         const newPlayer = this.createPlayer(socket.id, playerName);
         socket.emit(ServerConfig.IO.OUTGOING.NEW_PLAYER_INFO, playerName, newPlayer.color);
         socket.emit(ServerConfig.IO.OUTGOING.BOARD_INFO, Board);
-        this.notificationService.broadcastNotification(`${playerName} has joined!`, newPlayer.color);
+        this.notificationService.broadcastNotification(`${playerName} entrou no jogo!`, newPlayer.color);
         const backgroundImage = this.imageService.getBackgroundImage();
         if (backgroundImage) {
             socket.emit(ServerConfig.IO.OUTGOING.NEW_BACKGROUND_IMAGE, backgroundImage);
@@ -53,7 +53,7 @@ class PlayerService {
 
         // Start game if the first player has joined
         if (this.playerContainer.getNumberOfPlayers() === 1) {
-            console.log('Game Started');
+            console.log('Jogo iniciado');
             this.runGameCycle();
         }
     }
@@ -73,7 +73,7 @@ class PlayerService {
         player.color = newColor;
         this.playerStatBoard.changePlayerColor(player.id, newColor);
         socket.emit(ServerConfig.IO.OUTGOING.NEW_PLAYER_INFO, player.name, newColor);
-        this.notificationService.broadcastNotification(`${player.name} has changed colors.`, newColor);
+        this.notificationService.broadcastNotification(`${player.name} mudou de cor.`, newColor);
     }
 
     changePlayerName(socket, newPlayerName) {
@@ -81,7 +81,7 @@ class PlayerService {
         const oldPlayerName = player.name;
         const newPlayerNameCleaned = ValidationService.cleanString(newPlayerName);
         if (!ValidationService.isValidPlayerName(newPlayerNameCleaned)) {
-            console.log(`${player.name} tried changing to an invalid name`);
+            console.log(`${player.name} tentou mudar para um nome inválido`);
             return;
         }
         if (oldPlayerName === newPlayerNameCleaned) {
@@ -90,10 +90,10 @@ class PlayerService {
         if (this.nameService.doesPlayerNameExist(newPlayerNameCleaned)) {
             socket.emit(ServerConfig.IO.OUTGOING.NEW_PLAYER_INFO, oldPlayerName, player.color);
             this.notificationService.broadcastNotification(
-                `${player.name} couldn't claim the name ${newPlayerNameCleaned}`, player.color);
+                `${player.name} não conseguiu usar o nome ${newPlayerNameCleaned}`, player.color);
         } else {
             this.notificationService.broadcastNotification(
-                `${oldPlayerName} is now known as ${newPlayerNameCleaned}`, player.color);
+                `${oldPlayerName} agora é conhecido como ${newPlayerNameCleaned}`, player.color);
             player.name = newPlayerNameCleaned;
             this.nameService.usePlayerName(newPlayerNameCleaned);
             this.playerStatBoard.changePlayerName(player.id, newPlayerNameCleaned);
@@ -106,7 +106,7 @@ class PlayerService {
         if (!player) {
             return;
         }
-        this.notificationService.broadcastNotification(`${player.name} has left.`, player.color);
+        this.notificationService.broadcastNotification(`${player.name} saiu do jogo.`, player.color);
         this.colorService.returnColor(player.color);
         this.nameService.returnPlayerName(player.name);
         this.playerStatBoard.removePlayer(player.id);
@@ -178,7 +178,7 @@ class PlayerService {
         const player = this.playerContainer.getPlayer(playerId);
         this.playerContainer.removeSpectatingPlayerId(player.id);
         this.respawnPlayer(playerId);
-        this.notificationService.broadcastNotification(`${player.name} has rejoined the game.`, player.color);
+        this.notificationService.broadcastNotification(`${player.name} voltou ao jogo.`, player.color);
     }
 
     playerSpectateGame(playerId) {
@@ -186,7 +186,7 @@ class PlayerService {
         this.boardOccupancyService.removePlayerOccupancy(player.id, player.getSegments());
         this.playerContainer.addSpectatingPlayerId(player.id);
         player.clearAllSegments();
-        this.notificationService.broadcastNotification(`${player.name} is now spectating.`, player.color);
+        this.notificationService.broadcastNotification(`${player.name} agora está assistindo.`, player.color);
     }
 
     respawnPlayer(playerId) {

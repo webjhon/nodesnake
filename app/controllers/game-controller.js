@@ -83,7 +83,7 @@ class GameController {
     runGameCycle() {
         // Pause and reset the game if there aren't any players
         if (this.playerContainer.getNumberOfPlayers() - this.adminService.getBotIds().length === 0) {
-            console.log('Game Paused');
+            console.log('Jogo pausado');
             this.boardOccupancyService.initializeBoard();
             this.adminService.resetGame();
             this.nameService.reinitialize();
@@ -135,10 +135,10 @@ class GameController {
         }
         if (this.boardOccupancyService.isWall(coordinate)) {
             this.boardOccupancyService.removeWall(coordinate);
-            this.notificationService.broadcastNotification(`${player.name} has removed a wall`, player.color);
+            this.notificationService.broadcastNotification(`${player.name} removeu uma parede`, player.color);
         } else {
             this.boardOccupancyService.addWall(coordinate);
-            this.notificationService.broadcastNotification(`${player.name} has added a wall`, player.color);
+            this.notificationService.broadcastNotification(`${player.name} adicionou uma parede`, player.color);
         }
     }
 
