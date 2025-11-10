@@ -47,9 +47,9 @@ class FoodService {
                 this.boardOccupancyService.addPlayerOccupancy(otherPlayer.id, otherPlayer.getSegments());
                 this.boardOccupancyService.addPlayerOccupancy(playerWhoConsumedFood.id, playerWhoConsumedFood.getSegments());
                 this.notificationService.notifyPlayerFoodCollected(playerWhoConsumedFood.id,
-                    'Swap!', food.coordinate, food.color, true);
+                    'Troca!', food.coordinate, food.color, true);
                 this.notificationService.notifyPlayerFoodCollected(otherPlayer.id,
-                    'Swap!', playerWhoConsumedFood.getHeadCoordinate(), food.color, true);
+                    'Troca!', playerWhoConsumedFood.getHeadCoordinate(), food.color, true);
             } else {
                 this.notificationService.notifyPlayerFoodCollected(playerWhoConsumedFood.id,
                     `+${points}`, food.coordinate, food.color);
@@ -75,7 +75,8 @@ class FoodService {
     generateSingleFood() {
         const randomUnoccupiedCoordinate = this.boardOccupancyService.getRandomUnoccupiedCoordinate();
         if (!randomUnoccupiedCoordinate) {
-            this.notificationService.broadcastNotification('Could not add more food.  No room left.', 'white');
+            this.notificationService.broadcastNotification(
+                'Não foi possível adicionar mais comida. Sem espaço disponível.', 'white');
             return;
         }
         const foodId = this.nameService.getFoodId();

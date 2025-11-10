@@ -34,17 +34,17 @@ class AdminService {
         let notification = player.name;
         if (foodOption === ServerConfig.INCREMENT_CHANGE.INCREASE) {
             this.foodService.generateSingleFood();
-            notification += ' has added some food.';
+            notification += ' adicionou comida.';
         } else if (foodOption === ServerConfig.INCREMENT_CHANGE.DECREASE) {
             if (this.foodService.getFoodAmount() > 0) {
                 this._removeLastFood();
-                notification += ' has removed some food.';
+                notification += ' removeu comida.';
             } else {
-                notification += ' couldn\'t remove food.';
+                notification += ' não conseguiu remover comida.';
             }
         } else if (foodOption === ServerConfig.INCREMENT_CHANGE.RESET) {
             this._resetFood();
-            notification += ' has reset the food.';
+            notification += ' redefiniu a quantidade de comida.';
         }
         this.notificationService.broadcastNotification(notification, player.color);
     }
@@ -54,21 +54,21 @@ class AdminService {
         let notification = player.name;
         if (speedOption === ServerConfig.INCREMENT_CHANGE.INCREASE) {
             if (this.currentFPS < ServerConfig.MAX_FPS) {
-                notification += ' has raised the game speed.';
+                notification += ' aumentou a velocidade do jogo.';
                 this.currentFPS++;
             } else {
-                notification += ' tried to raised the game speed past the limit.';
+                notification += ' tentou aumentar a velocidade do jogo além do limite.';
             }
         } else if (speedOption === ServerConfig.INCREMENT_CHANGE.DECREASE) {
             if (this.currentFPS > ServerConfig.MIN_FPS) {
-                notification += ' has lowered the game speed.';
+                notification += ' diminuiu a velocidade do jogo.';
                 this.currentFPS--;
             } else {
-                notification += ' tried to lower the game speed past the limit.';
+                notification += ' tentou diminuir a velocidade do jogo além do limite.';
             }
         } else if (speedOption === ServerConfig.INCREMENT_CHANGE.RESET) {
             this._resetSpeed();
-            notification += ' has reset the game speed.';
+            notification += ' redefiniu a velocidade do jogo.';
         }
         this.notificationService.broadcastNotification(notification, player.color);
     }
@@ -77,18 +77,18 @@ class AdminService {
         const player = this.playerContainer.getPlayer(playerId);
         let notification = player.name;
         if (lengthOption === ServerConfig.INCREMENT_CHANGE.INCREASE) {
-            notification += ' has increased the player start length.';
+            notification += ' aumentou o tamanho inicial dos jogadores.';
             this.playerStartLength++;
         } else if (lengthOption === ServerConfig.INCREMENT_CHANGE.DECREASE) {
             if (this.playerStartLength > 1) {
-                notification += ' has decreased the player start length.';
+                notification += ' diminuiu o tamanho inicial dos jogadores.';
                 this.playerStartLength--;
             } else {
-                notification += ' tried to lower the player start length past the limit.';
+                notification += ' tentou diminuir o tamanho inicial dos jogadores além do limite.';
             }
         } else if (lengthOption === ServerConfig.INCREMENT_CHANGE.RESET) {
             this._resetPlayerStartLength();
-            notification += ' has reset the player start length.';
+            notification += ' redefiniu o tamanho inicial dos jogadores.';
         }
         this.notificationService.broadcastNotification(notification, player.color);
     }
@@ -115,12 +115,12 @@ class AdminService {
     _addBot(playerRequestingAddition) {
         if (this.botIds.length >= ServerConfig.MAX_BOTS) {
             this.notificationService.broadcastNotification(
-                `${playerRequestingAddition.name} tried to add a bot past the limit.`, playerRequestingAddition.color);
+                `${playerRequestingAddition.name} tentou adicionar um bot além do limite.`, playerRequestingAddition.color);
             return;
         }
         const newBotId = this.nameService.getBotId();
         const newBot = this.playerService.createPlayer(newBotId, newBotId);
-        this.notificationService.broadcastNotification(`${newBot.name} has joined!`, newBot.color);
+        this.notificationService.broadcastNotification(`${newBot.name} entrou no jogo!`, newBot.color);
         this.botIds.push(newBot.id);
     }
 
@@ -129,7 +129,7 @@ class AdminService {
             this.playerService.disconnectPlayer(this.botIds.pop());
         } else {
             this.notificationService.broadcastNotification(
-                `${playerRequestingRemoval.name} tried to remove a bot that doesn't exist.`, playerRequestingRemoval.color);
+                `${playerRequestingRemoval.name} tentou remover um bot que não existe.`, playerRequestingRemoval.color);
         }
     }
 
