@@ -30,6 +30,8 @@ export default class GameController {
         this.textsToDraw = [];
         this.walls = [];
         this.isFullScreen = false;
+        this.localPlayerSpawnHighlightEndTime = 0;
+        this.localPlayerLastMoveCounter = null;
     }
 
     connect(io) {
@@ -55,13 +57,23 @@ export default class GameController {
             if (player.segments.length === 0) {
                 continue;
             }
-            // Highlight the player's snake for a brief moment after spawning
-            if (`/#${this.socket.id}` === player.id &&
-                    player.moveCounter <= ClientConfig.TURNS_TO_FLASH_AFTER_SPAWN) {
-                this.canvasView.drawSpawnHighlight(
-                    player.segments[0],
-                    player.moveCounter,
-                    ClientConfig.TURNS_TO_FLASH_AFTER_SPAWN);
+            const isLocalPlayer = `/#${this.socket.id}` === player.id;
+            if (isLocalPlayer) {
+                if (this.localPlayerLastMoveCounter === null ||
+                        player.moveCounter < this.localPlayerLastMoveCounter ||
+                        (player.moveCounter === 0 && Date.now() > this.localPlayerSpawnHighlightEndTime)) {
+                    this.localPlayerSpawnHighlightEndTime = Date.now() + ClientConfig.SPAWN_HIGHLIGHT_DURATION_MS;
+                }
+
+                const remainingHighlightTime = this.localPlayerSpawnHighlightEndTime - Date.now();
+                if (remainingHighlightTime > 0) {
+                    this.canvasView.drawSpawnHighlight(
+                        player.segments[0],
+                        remainingHighlightTime,
+                        ClientConfig.SPAWN_HIGHLIGHT_DURATION_MS);
+                }
+
+                this.localPlayerLastMoveCounter = player.moveCounter;
             }
 
             if (player.base64Image) {

@@ -3,11 +3,11 @@
  */
 export default {
     FPS: 60,
-    TURNS_TO_FLASH_AFTER_SPAWN: 10,
+    SPAWN_HIGHLIGHT_DURATION_MS: 2000,
     TURNS_TO_SHOW_FOOD_TEXT: 20,
     TIME_TO_SHOW_KILL_MESSAGE_IN_MS: 3000,
     CANVAS_TEXT_STYLE: 'bold 24px PressStart2P',
-    SPAWN_FLASH_COLOR: 'white',
+    SPAWN_FLASH_COLOR: '#ffd740',
     WALL_COLOR: 'gray',
     IO: {
         INCOMING: {
