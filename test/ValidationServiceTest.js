@@ -16,6 +16,16 @@ describe('ValidationService', () => {
         done();
     });
 
+    it('should allow a valid svg base64 data uri', done => {
+        const base64DataURI = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnPjwv' +
+            'c3ZnPg==';
+
+        const isValid = ValidationService.isValidBase64DataURI(base64DataURI);
+        assert.isTrue(isValid);
+
+        done();
+    });
+
     it('should not allow an invalid base64 data uri', done => {
         const base64DataURI = 'iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAA' +
         'gUlEQVQoU62QKxKAMAxENwKJ4UpwISwHwHIhuBIGiQjTkLZJYAZDVWZ3X/MhhMcAE0BJtnWOifEGJS2D1o8A68+SMW' +
