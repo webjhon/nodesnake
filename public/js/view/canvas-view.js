@@ -23,30 +23,62 @@ export default class CanvasView {
         this.boundResizeHandler = null;
         this.playerImageCache = new Map();
         this.foodSpriteCache = new Map();
+        this.cameraCenter = { x: 0, y: 0 };
+        this.zoom = 1;
+        this.minZoom = 0.25;
+        this.maxZoom = 1.5;
         this._initializeClickListeners(canvas, canvasClickHandler);
     }
 
-    clear() {
-        this.context.fillStyle = 'black';
-        this.context.globalAlpha = 1;
-        this.context.fillRect(0, 0, this.width, this.height);
-
-        if (this.backgroundImage) {
-            this.context.drawImage(this.backgroundImage, 0, 0);
+    clampZoom(zoom) {
+        if (typeof zoom !== 'number' || Number.isNaN(zoom)) {
+            return this.zoom;
         }
+        return Math.max(this.minZoom, Math.min(this.maxZoom, zoom));
+    }
+
+    setCamera(center, zoom) {
+        if (center && typeof center.x === 'number' && typeof center.y === 'number') {
+            this.cameraCenter = { x: center.x, y: center.y };
+        }
+        if (typeof zoom === 'number') {
+            this.zoom = this.clampZoom(zoom);
+        }
+    }
+
+    getZoomToFitSquares(widthSquares, heightSquares) {
+        if (widthSquares <= 0 || heightSquares <= 0) {
+            return this.zoom;
+        }
+        const zoomX = this.width / (widthSquares * this.squareSizeInPixels);
+        const zoomY = this.height / (heightSquares * this.squareSizeInPixels);
+        return Math.min(zoomX, zoomY);
+    }
+
+    getVisibleWorldBounds() {
+        const halfWidthSquares = (this.width / 2) / (this.squareSizeInPixels * this.zoom);
+        const halfHeightSquares = (this.height / 2) / (this.squareSizeInPixels * this.zoom);
+        return {
+            minX: this.cameraCenter.x - halfWidthSquares,
+            maxX: this.cameraCenter.x + halfWidthSquares,
+            minY: this.cameraCenter.y - halfHeightSquares,
+            maxY: this.cameraCenter.y + halfHeightSquares,
+        };
+    }
+
+    clear() {
+        this.context.save();
+        this.context.setTransform(1, 0, 0, 1, 0, 0);
+        this.context.globalAlpha = 1;
+        this.context.fillStyle = 'black';
+        this.context.fillRect(0, 0, this.width, this.height);
+        if (this.backgroundImage) {
+            this.context.drawImage(this.backgroundImage, 0, 0, this.width, this.height);
+        }
+        this.context.restore();
 
         if (this.showGridLines) {
-            this.context.strokeStyle = '#2a2a2a';
-            this.context.lineWidth = 0.5;
-            for (let i = this.squareSizeInPixels / 2; i < this.width || i < this.height; i += this.squareSizeInPixels) {
-                // draw horizontal lines
-                this.context.moveTo(i, 0);
-                this.context.lineTo(i, this.height);
-                // draw vertical lines
-                this.context.moveTo(0, i);
-                this.context.lineTo(this.width, i);
-            }
-            this.context.stroke();
+            this._drawGridLines();
         }
     }
 
@@ -57,8 +89,9 @@ export default class CanvasView {
     }
 
     drawImage(coordinate, base64Image) {
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        if (!coordinate) {
+            return;
+        }
         let image = this.playerImageCache.get(base64Image);
         if (!image) {
             image = new Image();
@@ -67,8 +100,12 @@ export default class CanvasView {
         }
 
         const draw = () => {
-            this.context.drawImage(image, x - (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2),
-                this.squareSizeInPixels, this.squareSizeInPixels);
+            const canvasPoint = this._worldToCanvasPoint(coordinate);
+            const size = this._worldDistanceToPixels(1);
+            if (!this._isVisible(canvasPoint.x, canvasPoint.y, size)) {
+                return;
+            }
+            this.context.drawImage(image, canvasPoint.x - (size / 2), canvasPoint.y - (size / 2), size, size);
         };
 
         if (image.complete && image.naturalWidth) {
@@ -85,42 +122,60 @@ export default class CanvasView {
     }
 
     drawFood(coordinate, appearanceId, fallbackColor) {
+        if (!coordinate) {
+            return;
+        }
         const sprite = this._getFoodSprite(appearanceId, fallbackColor);
         if (!sprite) {
             this.drawSquare(coordinate, fallbackColor || 'white');
             return;
         }
 
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
-        const size = this.squareSizeInPixels * FOOD_DRAW_SCALE;
-        this.context.drawImage(sprite, x - (size / 2), y - (size / 2), size, size);
+        const canvasPoint = this._worldToCanvasPoint(coordinate);
+        const size = this._worldDistanceToPixels(FOOD_DRAW_SCALE);
+        if (!this._isVisible(canvasPoint.x, canvasPoint.y, size)) {
+            return;
+        }
+        this.context.drawImage(sprite, canvasPoint.x - (size / 2), canvasPoint.y - (size / 2), size, size);
     }
 
     drawSquare(coordinate, color) {
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        if (!coordinate) {
+            return;
+        }
+        const canvasPoint = this._worldToCanvasPoint(coordinate);
+        const size = this._worldDistanceToPixels(1);
+        if (!this._isVisible(canvasPoint.x, canvasPoint.y, size)) {
+            return;
+        }
+        const halfSize = size / 2;
         this.context.fillStyle = color;
         this.context.beginPath();
-        this.context.moveTo(x - (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2));
-        this.context.lineTo(x + (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2));
-        this.context.lineTo(x + (this.squareSizeInPixels / 2), y + (this.squareSizeInPixels / 2));
-        this.context.lineTo(x - (this.squareSizeInPixels / 2), y + (this.squareSizeInPixels / 2));
+        this.context.moveTo(canvasPoint.x - halfSize, canvasPoint.y - halfSize);
+        this.context.lineTo(canvasPoint.x + halfSize, canvasPoint.y - halfSize);
+        this.context.lineTo(canvasPoint.x + halfSize, canvasPoint.y + halfSize);
+        this.context.lineTo(canvasPoint.x - halfSize, canvasPoint.y + halfSize);
         this.context.closePath();
         this.context.fill();
     }
 
     drawSquareAround(coordinate, color) {
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
-        const lengthAroundSquare = this.squareSizeInPixels * 2;
-        this.context.lineWidth = this.squareSizeInPixels;
+        if (!coordinate) {
+            return;
+        }
+        const canvasPoint = this._worldToCanvasPoint(coordinate);
+        const size = this._worldDistanceToPixels(1);
+        const lengthAroundSquare = size * 2;
+        if (!this._isVisible(canvasPoint.x, canvasPoint.y, lengthAroundSquare * 2)) {
+            return;
+        }
+        this.context.lineWidth = size;
         this.context.strokeStyle = color;
         this.context.beginPath();
-        this.context.moveTo(x - lengthAroundSquare, y - lengthAroundSquare);
-        this.context.lineTo(x + lengthAroundSquare, y - lengthAroundSquare);
-        this.context.lineTo(x + lengthAroundSquare, y + lengthAroundSquare);
-        this.context.lineTo(x - lengthAroundSquare, y + lengthAroundSquare);
+        this.context.moveTo(canvasPoint.x - lengthAroundSquare, canvasPoint.y - lengthAroundSquare);
+        this.context.lineTo(canvasPoint.x + lengthAroundSquare, canvasPoint.y - lengthAroundSquare);
+        this.context.lineTo(canvasPoint.x + lengthAroundSquare, canvasPoint.y + lengthAroundSquare);
+        this.context.lineTo(canvasPoint.x - lengthAroundSquare, canvasPoint.y + lengthAroundSquare);
         this.context.closePath();
         this.context.stroke();
     }
@@ -130,22 +185,26 @@ export default class CanvasView {
             return;
         }
 
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        const canvasPoint = this._worldToCanvasPoint(coordinate);
+        const unitSize = this._worldDistanceToPixels(1);
         const clampedRemaining = Math.max(Math.min(remainingTimeInMs, totalDurationInMs), 0);
         const elapsed = totalDurationInMs - clampedRemaining;
         const progress = elapsed / totalDurationInMs;
         const pulse = 0.5 + 0.5 * Math.sin(progress * Math.PI * 6);
 
-        const maxRadius = this.squareSizeInPixels * 2.8;
-        const minRadius = this.squareSizeInPixels * 1.2;
+        const maxRadius = unitSize * 2.8;
+        const minRadius = unitSize * 1.2;
         const outerRadius = minRadius + (maxRadius - minRadius) * (0.4 + 0.6 * pulse);
         const innerRadius = outerRadius * (0.45 + 0.2 * pulse);
         const opacity = 0.85 - (progress * 0.6);
         const accentColor = ClientConfig.SPAWN_FLASH_COLOR;
 
+        if (!this._isVisible(canvasPoint.x, canvasPoint.y, outerRadius * 2)) {
+            return;
+        }
+
         this.context.save();
-        this.context.translate(x, y);
+        this.context.translate(canvasPoint.x, canvasPoint.y);
         this.context.globalCompositeOperation = 'lighter';
 
         const gradient = this.context.createRadialGradient(0, 0, innerRadius * 0.2, 0, 0, outerRadius);
@@ -158,11 +217,11 @@ export default class CanvasView {
         this.context.arc(0, 0, outerRadius, 0, Math.PI * 2);
         this.context.fill();
 
-        this.context.lineWidth = this.squareSizeInPixels * (0.55 + 0.35 * pulse);
+        this.context.lineWidth = unitSize * (0.55 + 0.35 * pulse);
         this.context.globalAlpha = opacity;
         this.context.strokeStyle = accentColor;
         this.context.shadowColor = accentColor;
-        this.context.shadowBlur = this.squareSizeInPixels * 1.5;
+        this.context.shadowBlur = unitSize * 1.5;
         this.context.beginPath();
         this.context.arc(0, 0, innerRadius, 0, Math.PI * 2);
         this.context.stroke();
@@ -171,7 +230,7 @@ export default class CanvasView {
         const rayLength = outerRadius * (1.25 + 0.1 * pulse);
         const rayFade = Math.max(0, 0.65 - progress * 0.5);
         if (rayFade > 0) {
-            this.context.lineWidth = this.squareSizeInPixels * 0.18;
+            this.context.lineWidth = unitSize * 0.18;
             this.context.globalAlpha = rayFade;
             this.context.strokeStyle = 'rgba(255, 236, 179, 1)';
             for (let i = 0; i < rays; i++) {
@@ -279,6 +338,9 @@ export default class CanvasView {
     }
 
     drawFadingText(textToDraw, turnsToShow) {
+        if (!textToDraw || !textToDraw.coordinate) {
+            return;
+        }
         this.context.save();
         this.context.globalAlpha = this._getOpacityFromCounter(textToDraw.counter, turnsToShow);
         this.context.lineWidth = 1;
@@ -286,10 +348,11 @@ export default class CanvasView {
         this.context.fillStyle = textToDraw.color;
         this.context.font = ClientConfig.CANVAS_TEXT_STYLE;
 
+        const canvasPoint = this._worldToCanvasPoint(textToDraw.coordinate);
         const textWidth = this.context.measureText(textToDraw.text).width;
         const textHeight = 24;
-        let x = textToDraw.coordinate.x * this.squareSizeInPixels - textWidth / 2;
-        let y = textToDraw.coordinate.y * this.squareSizeInPixels + textHeight / 2;
+        let x = canvasPoint.x - textWidth / 2;
+        let y = canvasPoint.y + textHeight / 2;
         if (x < 0) {
             x = 0;
         } else if (x > (this.width - textWidth)) {
@@ -300,7 +363,6 @@ export default class CanvasView {
         } else if (y > this.height) {
             y = this.height;
         }
-        // Draw text specifying the bottom left corner
         this.context.strokeText(textToDraw.text, x, y);
         this.context.fillText(textToDraw.text, x, y);
         this.context.restore();
@@ -369,7 +431,35 @@ export default class CanvasView {
         }
     }
 
-    // Gets a fade-in/fade-out opacity
+    _drawGridLines() {
+        const pixelScale = this._worldDistanceToPixels(1);
+        if (pixelScale < 2) {
+            return;
+        }
+        const bounds = this.getVisibleWorldBounds();
+        const startColumn = Math.floor(bounds.minX);
+        const endColumn = Math.ceil(bounds.maxX);
+        const startRow = Math.floor(bounds.minY);
+        const endRow = Math.ceil(bounds.maxY);
+
+        this.context.save();
+        this.context.strokeStyle = '#2a2a2a';
+        this.context.lineWidth = Math.max(0.5, pixelScale * 0.05);
+        this.context.beginPath();
+        for (let column = startColumn; column <= endColumn; column++) {
+            const canvasPoint = this._worldToCanvasPoint({ x: column, y: bounds.minY });
+            this.context.moveTo(canvasPoint.x, 0);
+            this.context.lineTo(canvasPoint.x, this.height);
+        }
+        for (let row = startRow; row <= endRow; row++) {
+            const canvasPoint = this._worldToCanvasPoint({ x: bounds.minX, y: row });
+            this.context.moveTo(0, canvasPoint.y);
+            this.context.lineTo(this.width, canvasPoint.y);
+        }
+        this.context.stroke();
+        this.context.restore();
+    }
+
     _getOpacityFromCounter(counter, turnsToShow) {
         if (counter < turnsToShow * 0.1 || counter > turnsToShow * 0.9) {
             return 0.33;
@@ -387,8 +477,10 @@ export default class CanvasView {
             const scaleY = rect.height ? canvas.height / rect.height : 1;
             const x = (event.clientX - rect.left) * scaleX;
             const y = (event.clientY - rect.top) * scaleY;
-            const xCoord = Math.round(x / self.squareSizeInPixels);
-            const yCoord = Math.round(y / self.squareSizeInPixels);
+            const worldX = ((x - self.width / 2) / (self.squareSizeInPixels * self.zoom)) + self.cameraCenter.x;
+            const worldY = ((y - self.height / 2) / (self.squareSizeInPixels * self.zoom)) + self.cameraCenter.y;
+            const xCoord = Math.round(worldX);
+            const yCoord = Math.round(worldY);
             canvasClickHandler(xCoord, yCoord);
         }, false);
     }
@@ -412,5 +504,21 @@ export default class CanvasView {
         const scaledHeight = this.height * scale;
         this.canvas.style.width = `${scaledWidth}px`;
         this.canvas.style.height = `${scaledHeight}px`;
+    }
+
+    _isVisible(x, y, size) {
+        const half = size / 2;
+        return x + half >= 0 && x - half <= this.width && y + half >= 0 && y - half <= this.height;
+    }
+
+    _worldDistanceToPixels(distance) {
+        return distance * this.squareSizeInPixels * this.zoom;
+    }
+
+    _worldToCanvasPoint(coordinate) {
+        return {
+            x: (coordinate.x - this.cameraCenter.x) * this.squareSizeInPixels * this.zoom + (this.width / 2),
+            y: (coordinate.y - this.cameraCenter.y) * this.squareSizeInPixels * this.zoom + (this.height / 2),
+        };
     }
 }
