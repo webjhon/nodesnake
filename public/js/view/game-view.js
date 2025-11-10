@@ -28,6 +28,8 @@ export default class GameView {
         this.presetSkinButtons = [];
         this.selectedPresetSkinId = null;
         this.isPlayerSettingsModalOpen = false;
+        this.isAdminControlsModalOpen = false;
+        this.isAdminAuthenticated = false;
         this._renderPresetSkins();
         this._initEventHandling(botChangeCallback, foodChangeCallback, muteAudioCallback, playerColorChangeCallback,
             speedChangeCallback, startLengthChangeCallback, toggleGridLinesCallback);
@@ -160,6 +162,14 @@ export default class GameView {
             return;
         }
 
+        if (this.isAdminControlsModalOpen) {
+            if (e.keyCode === ESCAPE_KEYCODE) {
+                e.preventDefault();
+                this._closeAdminControlsModal();
+            }
+            return;
+        }
+
         if (this.isPlayerSettingsModalOpen) {
             if (e.keyCode === ESCAPE_KEYCODE) {
                 e.preventDefault();
@@ -255,6 +265,32 @@ export default class GameView {
         DomHelper.getFullScreenButton().addEventListener('click', () => DomHelper.toggleFullScreenMode());
         window.addEventListener('keydown', this._handleKeyDown.bind(this), true);
 
+        const adminControlsButton = DomHelper.getAdminControlsButton();
+        if (adminControlsButton) {
+            adminControlsButton.addEventListener('click', this._openAdminControlsModal.bind(this));
+        }
+        const adminControlsCloseButton = DomHelper.getAdminControlsCloseButton();
+        if (adminControlsCloseButton) {
+            adminControlsCloseButton.addEventListener('click', this._closeAdminControlsModal.bind(this));
+        }
+        const adminControlsBackdrop = DomHelper.getAdminControlsBackdrop();
+        if (adminControlsBackdrop) {
+            adminControlsBackdrop.addEventListener('click', this._closeAdminControlsModal.bind(this));
+        }
+        const adminControlsUnlockButton = DomHelper.getAdminControlsUnlockButton();
+        if (adminControlsUnlockButton) {
+            adminControlsUnlockButton.addEventListener('click', this._handleAdminUnlock.bind(this));
+        }
+        const adminControlsPasswordInput = DomHelper.getAdminControlsPasswordInput();
+        if (adminControlsPasswordInput) {
+            adminControlsPasswordInput.addEventListener('keydown', event => {
+                if (event.keyCode === ENTER_KEYCODE) {
+                    event.preventDefault();
+                    this._handleAdminUnlock();
+                }
+            });
+        }
+
         // Admin controls
         DomHelper.getIncreaseBotsButton().addEventListener('click',
             botChangeCallback.bind(this, ClientConfig.INCREMENT_CHANGE.INCREASE));
@@ -280,6 +316,10 @@ export default class GameView {
             startLengthChangeCallback.bind(this, ClientConfig.INCREMENT_CHANGE.DECREASE));
         DomHelper.getResetStartLengthButton().addEventListener('click',
             startLengthChangeCallback.bind(this, ClientConfig.INCREMENT_CHANGE.RESET));
+
+        DomHelper.hideAdminControlsPasswordFeedback();
+        DomHelper.setAdminControlsPasswordValue('');
+        DomHelper.setAdminControlsInteractive(false);
 
         DomHelper.registerFullScreenChangeHandler(this._handleFullScreenChange.bind(this));
     }
@@ -311,6 +351,74 @@ export default class GameView {
         const settingsButton = DomHelper.getPlayerSettingsButton();
         if (settingsButton) {
             settingsButton.focus();
+        }
+    }
+
+    _openAdminControlsModal() {
+        DomHelper.showAdminControlsModal();
+        this.isAdminControlsModalOpen = true;
+        DomHelper.hideAdminControlsPasswordFeedback();
+        if (this.isAdminAuthenticated) {
+            DomHelper.hideAdminControlsLock();
+            DomHelper.setAdminControlsInteractive(true);
+            this._focusFirstAdminControl();
+        } else {
+            DomHelper.showAdminControlsLock();
+            DomHelper.setAdminControlsInteractive(false);
+            DomHelper.setAdminControlsPasswordValue('');
+            const passwordInput = DomHelper.getAdminControlsPasswordInput();
+            if (passwordInput) {
+                passwordInput.focus();
+            }
+        }
+    }
+
+    _closeAdminControlsModal() {
+        DomHelper.hideAdminControlsModal();
+        this.isAdminControlsModalOpen = false;
+        DomHelper.hideAdminControlsPasswordFeedback();
+        if (!this.isAdminAuthenticated) {
+            DomHelper.showAdminControlsLock();
+            DomHelper.setAdminControlsInteractive(false);
+            DomHelper.setAdminControlsPasswordValue('');
+        }
+        const adminButton = DomHelper.getAdminControlsButton();
+        if (adminButton) {
+            adminButton.focus();
+        }
+    }
+
+    _handleAdminUnlock() {
+        const passwordInput = DomHelper.getAdminControlsPasswordInput();
+        if (!passwordInput) {
+            return;
+        }
+        if (passwordInput.value === 'profesnake') {
+            this.isAdminAuthenticated = true;
+            DomHelper.hideAdminControlsPasswordFeedback();
+            DomHelper.hideAdminControlsLock();
+            DomHelper.setAdminControlsInteractive(true);
+            DomHelper.setAdminControlsPasswordValue('');
+            passwordInput.blur();
+            this._focusFirstAdminControl();
+        } else {
+            DomHelper.showAdminControlsPasswordFeedback();
+            passwordInput.select();
+        }
+    }
+
+    _focusFirstAdminControl() {
+        const navLinks = DomHelper.getAdminControlsNavLinks();
+        if (navLinks && navLinks.length > 0) {
+            navLinks[0].focus();
+            return;
+        }
+        const content = DomHelper.getAdminControlsContent();
+        if (content) {
+            const firstButton = content.querySelector('button:not([disabled])');
+            if (firstButton) {
+                firstButton.focus();
+            }
         }
     }
 
