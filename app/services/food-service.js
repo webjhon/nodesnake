@@ -28,8 +28,11 @@ class FoodService {
         for (const foodConsumed of foodsConsumed) {
             const playerWhoConsumedFood = playerContainer.getPlayer(foodConsumed.playerId);
             const food = this.food[foodConsumed.foodId];
-            playerWhoConsumedFood.grow(ServerConfig.FOOD[food.type].GROWTH);
-            const points = ServerConfig.FOOD[food.type].POINTS;
+            const growth = food.growth !== null && typeof food.growth !== 'undefined' ?
+                food.growth : ServerConfig.FOOD[food.type].GROWTH;
+            playerWhoConsumedFood.grow(growth);
+            const points = food.points !== null && typeof food.points !== 'undefined' ?
+                food.points : ServerConfig.FOOD[food.type].POINTS;
             this.playerStatBoard.increaseScore(playerWhoConsumedFood.id, points);
 
             if (food.type === ServerConfig.FOOD.SWAP.TYPE && playerContainer.getNumberOfPlayers() > 1) {
@@ -89,7 +92,9 @@ class FoodService {
                 randomUnoccupiedCoordinate,
                 ServerConfig.FOOD.GOLDEN.TYPE,
                 ServerConfig.FOOD.GOLDEN.COLOR,
-                appearanceId
+                appearanceId,
+                ServerConfig.FOOD.GOLDEN.POINTS,
+                ServerConfig.FOOD.GOLDEN.GROWTH
             );
         } else if (Math.random() < ServerConfig.FOOD.SWAP.SPAWN_RATE) {
             food = new Food(
@@ -97,7 +102,9 @@ class FoodService {
                 randomUnoccupiedCoordinate,
                 ServerConfig.FOOD.SWAP.TYPE,
                 ServerConfig.FOOD.SWAP.COLOR,
-                appearanceId
+                appearanceId,
+                ServerConfig.FOOD.SWAP.POINTS,
+                ServerConfig.FOOD.SWAP.GROWTH
             );
         } else if (Math.random() < ServerConfig.FOOD.SUPER.SPAWN_RATE) {
             food = new Food(
@@ -105,7 +112,9 @@ class FoodService {
                 randomUnoccupiedCoordinate,
                 ServerConfig.FOOD.SUPER.TYPE,
                 ServerConfig.FOOD.SUPER.COLOR,
-                appearanceId
+                appearanceId,
+                ServerConfig.FOOD.SUPER.POINTS,
+                ServerConfig.FOOD.SUPER.GROWTH
             );
         } else {
             food = new Food(
@@ -113,11 +122,35 @@ class FoodService {
                 randomUnoccupiedCoordinate,
                 ServerConfig.FOOD.NORMAL.TYPE,
                 ServerConfig.FOOD.NORMAL.COLOR,
-                appearanceId
+                appearanceId,
+                ServerConfig.FOOD.NORMAL.POINTS,
+                ServerConfig.FOOD.NORMAL.GROWTH
             );
         }
         this.food[foodId] = food;
         this.boardOccupancyService.addFoodOccupancy(food.id, food.coordinate);
+    }
+
+    spawnPlayerRemainsFood(player, segments) {
+        if (!segments || segments.length === 0) {
+            return;
+        }
+
+        for (const segment of segments) {
+            const foodId = this.nameService.getFoodId();
+            const remainsFood = new Food(
+                foodId,
+                segment,
+                ServerConfig.FOOD.PLAYER_DROP.TYPE,
+                player.color,
+                null,
+                ServerConfig.FOOD.PLAYER_DROP.POINTS,
+                ServerConfig.FOOD.PLAYER_DROP.GROWTH,
+                player.base64Image || null
+            );
+            this.food[foodId] = remainsFood;
+            this.boardOccupancyService.addFoodOccupancy(foodId, segment);
+        }
     }
 
     _getRandomAppearanceId() {
