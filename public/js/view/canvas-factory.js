@@ -5,15 +5,19 @@ import DomHelper from './dom-helper.js';
  * Constructs CanvasView
  */
 export default class CanvasFactory {
-    static createCanvasView(squareSizeInPixels, horizontalSquares, verticalSquares, canvasClickHandler) {
+    static createCanvasView(squareSizeInPixels, horizontalSquares, verticalSquares, offsetX, offsetY, canvasClickHandler) {
         const canvas = DomHelper.createElement('canvas');
-        canvas.width = horizontalSquares * squareSizeInPixels;
-        canvas.height = verticalSquares * squareSizeInPixels;
-        canvas.style.width = `${canvas.width}px`;
-        canvas.style.height = `${canvas.height}px`;
-        DomHelper.getGameBoardDiv().appendChild(canvas);
+        const width = horizontalSquares * squareSizeInPixels;
+        const height = verticalSquares * squareSizeInPixels;
+        canvas.width = width;
+        canvas.height = height;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        const gameBoardDiv = DomHelper.getGameBoardDiv();
+        gameBoardDiv.innerHTML = '';
+        gameBoardDiv.appendChild(canvas);
         const imageUploadCanvas = this._createImageUploadCanvas(squareSizeInPixels);
-        return new CanvasView(canvas, squareSizeInPixels, imageUploadCanvas, canvasClickHandler);
+        return new CanvasView(canvas, squareSizeInPixels, offsetX, offsetY, imageUploadCanvas, canvasClickHandler);
     }
 
     static _createImageUploadCanvas(squareSizeInPixels) {

@@ -9,14 +9,16 @@ const FOOD_DRAW_SCALE = 1.9;
  * Handles all requests related to the canvas
  */
 export default class CanvasView {
-    constructor(canvas, squareSizeInPixels, imageUploadCanvas, canvasClickHandler) {
-        this.height = canvas.height;
-        this.width = canvas.width;
-        this.context = canvas.getContext('2d');
+    constructor(canvas, squareSizeInPixels, offsetX, offsetY, imageUploadCanvas, canvasClickHandler) {
         this.canvas = canvas;
+        this.squareSizeInPixels = squareSizeInPixels;
+        this.offsetX = offsetX || 0;
+        this.offsetY = offsetY || 0;
+        this.width = canvas.width;
+        this.height = canvas.height;
+        this.context = canvas.getContext('2d');
         this.defaultDisplayWidth = canvas.style.width;
         this.defaultDisplayHeight = canvas.style.height;
-        this.squareSizeInPixels = squareSizeInPixels;
         this.backgroundImageUploadCanvas = canvas;
         this.imageUploadCanvas = imageUploadCanvas;
         this.showGridLines = false;
@@ -57,8 +59,8 @@ export default class CanvasView {
     }
 
     drawImage(coordinate, base64Image) {
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        const x = (coordinate.x - this.offsetX) * this.squareSizeInPixels;
+        const y = (coordinate.y - this.offsetY) * this.squareSizeInPixels;
         let image = this.playerImageCache.get(base64Image);
         if (!image) {
             image = new Image();
@@ -91,15 +93,15 @@ export default class CanvasView {
             return;
         }
 
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        const x = (coordinate.x - this.offsetX) * this.squareSizeInPixels;
+        const y = (coordinate.y - this.offsetY) * this.squareSizeInPixels;
         const size = this.squareSizeInPixels * FOOD_DRAW_SCALE;
         this.context.drawImage(sprite, x - (size / 2), y - (size / 2), size, size);
     }
 
     drawSquare(coordinate, color) {
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        const x = (coordinate.x - this.offsetX) * this.squareSizeInPixels;
+        const y = (coordinate.y - this.offsetY) * this.squareSizeInPixels;
         this.context.fillStyle = color;
         this.context.beginPath();
         this.context.moveTo(x - (this.squareSizeInPixels / 2), y - (this.squareSizeInPixels / 2));
@@ -111,8 +113,8 @@ export default class CanvasView {
     }
 
     drawSquareAround(coordinate, color) {
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        const x = (coordinate.x - this.offsetX) * this.squareSizeInPixels;
+        const y = (coordinate.y - this.offsetY) * this.squareSizeInPixels;
         const lengthAroundSquare = this.squareSizeInPixels * 2;
         this.context.lineWidth = this.squareSizeInPixels;
         this.context.strokeStyle = color;
@@ -130,8 +132,8 @@ export default class CanvasView {
             return;
         }
 
-        const x = coordinate.x * this.squareSizeInPixels;
-        const y = coordinate.y * this.squareSizeInPixels;
+        const x = (coordinate.x - this.offsetX) * this.squareSizeInPixels;
+        const y = (coordinate.y - this.offsetY) * this.squareSizeInPixels;
         const clampedRemaining = Math.max(Math.min(remainingTimeInMs, totalDurationInMs), 0);
         const elapsed = totalDurationInMs - clampedRemaining;
         const progress = elapsed / totalDurationInMs;
@@ -288,8 +290,8 @@ export default class CanvasView {
 
         const textWidth = this.context.measureText(textToDraw.text).width;
         const textHeight = 24;
-        let x = textToDraw.coordinate.x * this.squareSizeInPixels - textWidth / 2;
-        let y = textToDraw.coordinate.y * this.squareSizeInPixels + textHeight / 2;
+        let x = (textToDraw.coordinate.x - this.offsetX) * this.squareSizeInPixels - textWidth / 2;
+        let y = (textToDraw.coordinate.y - this.offsetY) * this.squareSizeInPixels + textHeight / 2;
         if (x < 0) {
             x = 0;
         } else if (x > (this.width - textWidth)) {
@@ -349,6 +351,29 @@ export default class CanvasView {
         return this.imageUploadCanvas.toDataURL(imageType);
     }
 
+    updateBoardSize(horizontalSquares, verticalSquares, offsetX, offsetY) {
+        const newWidth = horizontalSquares * this.squareSizeInPixels;
+        const newHeight = verticalSquares * this.squareSizeInPixels;
+        const sizeChanged = newWidth !== this.width || newHeight !== this.height;
+        this.offsetX = offsetX || 0;
+        this.offsetY = offsetY || 0;
+
+        if (sizeChanged) {
+            this.width = newWidth;
+            this.height = newHeight;
+            this.canvas.width = newWidth;
+            this.canvas.height = newHeight;
+            this.defaultDisplayWidth = `${newWidth}px`;
+            this.defaultDisplayHeight = `${newHeight}px`;
+            if (this.boundResizeHandler) {
+                this._scaleCanvasToWindow();
+            } else {
+                this.canvas.style.width = this.defaultDisplayWidth;
+                this.canvas.style.height = this.defaultDisplayHeight;
+            }
+        }
+    }
+
     toggleGridLines() {
         this.showGridLines = !this.showGridLines;
     }
@@ -387,8 +412,8 @@ export default class CanvasView {
             const scaleY = rect.height ? canvas.height / rect.height : 1;
             const x = (event.clientX - rect.left) * scaleX;
             const y = (event.clientY - rect.top) * scaleY;
-            const xCoord = Math.round(x / self.squareSizeInPixels);
-            const yCoord = Math.round(y / self.squareSizeInPixels);
+            const xCoord = Math.round(x / self.squareSizeInPixels) + self.offsetX;
+            const yCoord = Math.round(y / self.squareSizeInPixels) + self.offsetY;
             canvasClickHandler(xCoord, yCoord);
         }, false);
     }
