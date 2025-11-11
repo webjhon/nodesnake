@@ -15,75 +15,30 @@ const WALL_TYPE = 'wall';
  */
 class BoardOccupancyService {
     constructor() {
-        this.boundsChangedCallback = null;
+        this.maxColumn = Board.HORIZONTAL_SQUARES;
+        this.maxRow = Board.VERTICAL_SQUARES;
         this.initializeBoard();
     }
 
     initializeBoard() {
-        this.minColumn = 0;
-        this.maxColumn = Board.HORIZONTAL_SQUARES - 1;
-        this.minRow = 0;
-        this.maxRow = Board.VERTICAL_SQUARES - 1;
-        this.board = [];
-        this._buildBoard();
-        this._notifyBoundsChanged();
-    }
-
-    setBoundsChangedCallback(callback) {
-        this.boundsChangedCallback = callback;
-    }
-
-    getBoardInfo() {
-        return {
-            SQUARE_SIZE_IN_PIXELS: Board.SQUARE_SIZE_IN_PIXELS,
-            HORIZONTAL_SQUARES: this.getWidth(),
-            VERTICAL_SQUARES: this.getHeight(),
-            OFFSET_X: this.minColumn,
-            OFFSET_Y: this.minRow,
-        };
-    }
-
-    getWidth() {
-        return this.maxColumn - this.minColumn + 1;
-    }
-
-    getHeight() {
-        return this.maxRow - this.minRow + 1;
-    }
-
-    ensureCoordinateWithinBounds(coordinate) {
-        let expanded = false;
-        while (coordinate.x < this.minColumn) {
-            this._expandLeft();
-            expanded = true;
+        // initialize 2d array
+        this.board = new Array(this.maxColumn);
+        for (let column = 0; column <= this.maxColumn; column++) {
+            this.board[column] = new Array(this.maxRow);
+            for (let row = 0; row <= this.maxRow; row++) {
+                this.board[column][row] = new CoordinateAttribute();
+                if (column === 0 || row === 0 || column === this.maxColumn || row === this.maxRow) {
+                    this.board[column][row].setPermanentWall(true);
+                }
+            }
         }
-        while (coordinate.x > this.maxColumn) {
-            this._expandRight();
-            expanded = true;
-        }
-        while (coordinate.y < this.minRow) {
-            this._expandUp();
-            expanded = true;
-        }
-        while (coordinate.y > this.maxRow) {
-            this._expandDown();
-            expanded = true;
-        }
-        if (expanded) {
-            this._notifyBoundsChanged();
-        }
-        return expanded;
-    }
-
-    containsCoordinate(coordinate) {
-        return coordinate.x >= this.minColumn && coordinate.x <= this.maxColumn &&
-            coordinate.y >= this.minRow && coordinate.y <= this.maxRow;
     }
 
     addFoodOccupancy(foodId, foodCoordinate) {
         this._addOccupancy(foodId, foodCoordinate, FOOD_TYPE);
     }
 
+    // Takes in an array of coordinates
     addPlayerOccupancy(playerId, playerCoordinates) {
         this._addOccupancy(playerId, playerCoordinates[0], HEAD_TYPE);
         for (let i = 1; i < playerCoordinates.length; i++) {
@@ -97,10 +52,9 @@ class BoardOccupancyService {
 
     getFoodsConsumed() {
         const foodsConsumed = [];
-        for (let columnIndex = 0; columnIndex < this.board.length; columnIndex++) {
-            const boardColumn = this.board[columnIndex];
-            for (let rowIndex = 0; rowIndex < boardColumn.length; rowIndex++) {
-                const coordinateAttribute = boardColumn[rowIndex];
+        for (let column = 0; column <= this.maxColumn; column++) {
+            for (let row = 0; row <= this.maxRow; row++) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupiedByFoodAndPlayer()) {
                     foodsConsumed.push(new FoodConsumed(coordinateAttribute.foodId,
                         coordinateAttribute.getPlayerIdsWithHead()[0]));
@@ -112,20 +66,20 @@ class BoardOccupancyService {
 
     getKillReports() {
         const killReports = [];
-        for (let columnIndex = 0; columnIndex < this.board.length; columnIndex++) {
-            const boardColumn = this.board[columnIndex];
-            for (let rowIndex = 0; rowIndex < boardColumn.length; rowIndex++) {
-                const coordinateAttribute = boardColumn[rowIndex];
-                if (!coordinateAttribute.isOccupiedByMultiplePlayers()) {
-                    continue;
-                }
-                const killerId = coordinateAttribute.playerIdWithTail;
-                if (killerId) {
-                    for (const playerIdWithHead of coordinateAttribute.getPlayerIdsWithHead()) {
-                        killReports.push(new KillReport(killerId, playerIdWithHead));
+        for (let column = 0; column <= this.maxColumn; column++) {
+            for (let row = 0; row <= this.maxRow; row++) {
+                const coordinateAttribute = this.board[column][row];
+                if (coordinateAttribute.isOccupiedByMultiplePlayers()) {
+                    const killerId = coordinateAttribute.playerIdWithTail;
+                    if (killerId) {
+                        // Heads collided with a tail
+                        for (const playerIdWithHead of coordinateAttribute.getPlayerIdsWithHead()) {
+                            killReports.push(new KillReport(killerId, playerIdWithHead));
+                        }
+                    } else {
+                        // Heads collided
+                        killReports.push(new KillReport(null, null, coordinateAttribute.getPlayerIdsWithHead()));
                     }
-                } else {
-                    killReports.push(new KillReport(null, null, coordinateAttribute.getPlayerIdsWithHead()));
                 }
             }
         }
@@ -134,13 +88,10 @@ class BoardOccupancyService {
 
     getRandomUnoccupiedCoordinate() {
         const unoccupiedCoordinates = [];
-        for (let columnIndex = 0; columnIndex < this.board.length; columnIndex++) {
-            const boardColumn = this.board[columnIndex];
-            for (let rowIndex = 0; rowIndex < boardColumn.length; rowIndex++) {
-                const coordinateAttribute = boardColumn[rowIndex];
+        for (let column = 0; column <= this.maxColumn; column++) {
+            for (let row = 0; row <= this.maxRow; row++) {
+                const coordinateAttribute = this.board[column][row];
                 if (!coordinateAttribute.isOccupied()) {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                 }
             }
@@ -152,15 +103,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedHorizontalCoordinatesFromTopLeft(requiredFreeLength) {
-        for (let rowIndex = 0; rowIndex < this.getHeight(); rowIndex++) {
+        for (let row = 0; row <= this.maxRow; row++) {
             let unoccupiedCoordinates = [];
-            for (let columnIndex = 0; columnIndex < this.getWidth(); columnIndex++) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let column = 0; column <= this.maxColumn; column++) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -172,15 +121,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedHorizontalCoordinatesFromTopRight(requiredFreeLength) {
-        for (let rowIndex = 0; rowIndex < this.getHeight(); rowIndex++) {
+        for (let row = 0; row <= this.maxRow; row++) {
             let unoccupiedCoordinates = [];
-            for (let columnIndex = this.getWidth() - 1; columnIndex >= 0; columnIndex--) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let column = this.maxColumn; column >= 0; column--) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -192,15 +139,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedHorizontalCoordinatesFromBottomRight(requiredFreeLength) {
-        for (let rowIndex = this.getHeight() - 1; rowIndex >= 0; rowIndex--) {
+        for (let row = this.maxRow; row >= 0; row--) {
             let unoccupiedCoordinates = [];
-            for (let columnIndex = this.getWidth() - 1; columnIndex >= 0; columnIndex--) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let column = this.maxColumn; column >= 0; column--) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -212,15 +157,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedHorizontalCoordinatesFromBottomLeft(requiredFreeLength) {
-        for (let rowIndex = this.getHeight() - 1; rowIndex >= 0; rowIndex--) {
+        for (let row = this.maxRow; row >= 0; row--) {
             let unoccupiedCoordinates = [];
-            for (let columnIndex = 0; columnIndex < this.getWidth(); columnIndex++) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let column = 0; column <= this.maxColumn; column++) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -232,15 +175,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedVerticalCoordinatesFromTopLeft(requiredFreeLength) {
-        for (let columnIndex = 0; columnIndex < this.getWidth(); columnIndex++) {
+        for (let column = 0; column <= this.maxColumn; column++) {
             let unoccupiedCoordinates = [];
-            for (let rowIndex = 0; rowIndex < this.getHeight(); rowIndex++) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let row = 0; row <= this.maxRow; row++) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -252,15 +193,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedVerticalCoordinatesFromTopRight(requiredFreeLength) {
-        for (let columnIndex = this.getWidth() - 1; columnIndex >= 0; columnIndex--) {
+        for (let column = this.maxColumn; column >= 0; column--) {
             let unoccupiedCoordinates = [];
-            for (let rowIndex = 0; rowIndex < this.getHeight(); rowIndex++) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let row = 0; row <= this.maxRow; row++) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -272,15 +211,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedVerticalCoordinatesFromBottomRight(requiredFreeLength) {
-        for (let columnIndex = this.getWidth() - 1; columnIndex >= 0; columnIndex--) {
+        for (let column = this.maxColumn; column >= 0; column--) {
             let unoccupiedCoordinates = [];
-            for (let rowIndex = this.getHeight() - 1; rowIndex >= 0; rowIndex--) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let row = this.maxRow; row >= 0; row--) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -292,15 +229,13 @@ class BoardOccupancyService {
     }
 
     getUnoccupiedVerticalCoordinatesFromBottomLeft(requiredFreeLength) {
-        for (let columnIndex = 0; columnIndex < this.getWidth(); columnIndex++) {
+        for (let column = 0; column <= this.maxColumn; column++) {
             let unoccupiedCoordinates = [];
-            for (let rowIndex = this.getHeight() - 1; rowIndex >= 0; rowIndex--) {
-                const coordinateAttribute = this.board[columnIndex][rowIndex];
+            for (let row = this.maxRow; row >= 0; row--) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isOccupied()) {
                     unoccupiedCoordinates = [];
                 } else {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     unoccupiedCoordinates.push(new Coordinate(column, row));
                     if (unoccupiedCoordinates.length === requiredFreeLength) {
                         return unoccupiedCoordinates;
@@ -313,13 +248,10 @@ class BoardOccupancyService {
 
     getWallCoordinates() {
         const wallCoordinates = [];
-        for (let columnIndex = 0; columnIndex < this.board.length; columnIndex++) {
-            const boardColumn = this.board[columnIndex];
-            for (let rowIndex = 0; rowIndex < boardColumn.length; rowIndex++) {
-                const coordinateAttribute = boardColumn[rowIndex];
+        for (let column = 0; column <= this.maxColumn; column++) {
+            for (let row = 0; row <= this.maxRow; row++) {
+                const coordinateAttribute = this.board[column][row];
                 if (coordinateAttribute.isWall()) {
-                    const column = this.minColumn + columnIndex;
-                    const row = this.minRow + rowIndex;
                     wallCoordinates.push(new Coordinate(column, row));
                 }
             }
@@ -328,28 +260,22 @@ class BoardOccupancyService {
     }
 
     isOutOfBounds(coordinate) {
-        return !this.containsCoordinate(coordinate);
+        return coordinate.x < 0 || coordinate.x > this.maxColumn || coordinate.y < 0 || coordinate.y > this.maxRow;
     }
 
     isSafe(coordinate) {
-        if (!this.containsCoordinate(coordinate)) {
-            return true;
-        }
-        return this._getCoordinateAttribute(coordinate).isSafe();
+        const coordinateAttribute = this.board[coordinate.x][coordinate.y];
+        return coordinateAttribute.isSafe();
     }
 
     isPermanentWall(coordinate) {
-        if (!this.containsCoordinate(coordinate)) {
-            return false;
-        }
-        return this._getCoordinateAttribute(coordinate).isPermanentWall();
+        const coordinateAttribute = this.board[coordinate.x][coordinate.y];
+        return coordinateAttribute.isPermanentWall();
     }
 
     isWall(coordinate) {
-        if (!this.containsCoordinate(coordinate)) {
-            return false;
-        }
-        return this._getCoordinateAttribute(coordinate).isWall();
+        const coordinateAttribute = this.board[coordinate.x][coordinate.y];
+        return coordinateAttribute.isWall();
     }
 
     removeFoodOccupancy(foodId, foodCoordinate) {
@@ -357,9 +283,6 @@ class BoardOccupancyService {
     }
 
     removePlayerOccupancy(playerId, playerCoordinates) {
-        if (!playerCoordinates || playerCoordinates.length === 0) {
-            return;
-        }
         this._removeOccupancy(playerId, playerCoordinates[0], HEAD_TYPE);
         for (let i = 1; i < playerCoordinates.length; i++) {
             this._removeOccupancy(playerId, playerCoordinates[i], TAIL_TYPE);
@@ -371,8 +294,7 @@ class BoardOccupancyService {
     }
 
     _addOccupancy(id, coordinate, type) {
-        this.ensureCoordinateWithinBounds(coordinate);
-        const coordinateAttribute = this._getCoordinateAttribute(coordinate);
+        const coordinateAttribute = this.board[coordinate.x][coordinate.y];
         if (type === FOOD_TYPE) {
             coordinateAttribute.setFoodId(id);
         } else if (type === HEAD_TYPE) {
@@ -384,11 +306,9 @@ class BoardOccupancyService {
         }
     }
 
+
     _removeOccupancy(id, coordinate, type) {
-        if (!this.containsCoordinate(coordinate)) {
-            return;
-        }
-        const coordinateAttribute = this._getCoordinateAttribute(coordinate);
+        const coordinateAttribute = this.board[coordinate.x][coordinate.y];
         if (type === FOOD_TYPE) {
             coordinateAttribute.setFoodId(false);
         } else if (type === HEAD_TYPE) {
@@ -397,91 +317,6 @@ class BoardOccupancyService {
             coordinateAttribute.setPlayerIdWithTail(false);
         } else if (type === WALL_TYPE) {
             coordinateAttribute.setWall(false);
-        }
-    }
-
-    _buildBoard() {
-        const width = this.getWidth();
-        const height = this.getHeight();
-        for (let columnIndex = 0; columnIndex < width; columnIndex++) {
-            this.board[columnIndex] = new Array(height);
-            for (let rowIndex = 0; rowIndex < height; rowIndex++) {
-                this.board[columnIndex][rowIndex] = new CoordinateAttribute();
-            }
-        }
-    }
-
-    _expandDown() {
-        this._addRowsBottom(Board.EXPANSION_SIZE);
-    }
-
-    _expandLeft() {
-        this._addColumnsLeft(Board.EXPANSION_SIZE);
-    }
-
-    _expandRight() {
-        this._addColumnsRight(Board.EXPANSION_SIZE);
-    }
-
-    _expandUp() {
-        this._addRowsTop(Board.EXPANSION_SIZE);
-    }
-
-    _addColumnsLeft(count) {
-        const rows = this.getHeight();
-        for (let i = 0; i < count; i++) {
-            const column = new Array(rows);
-            for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
-                column[rowIndex] = new CoordinateAttribute();
-            }
-            this.board.unshift(column);
-        }
-        this.minColumn -= count;
-    }
-
-    _addColumnsRight(count) {
-        const rows = this.getHeight();
-        for (let i = 0; i < count; i++) {
-            const column = new Array(rows);
-            for (let rowIndex = 0; rowIndex < rows; rowIndex++) {
-                column[rowIndex] = new CoordinateAttribute();
-            }
-            this.board.push(column);
-        }
-        this.maxColumn += count;
-    }
-
-    _addRowsBottom(count) {
-        const width = this.getWidth();
-        for (let columnIndex = 0; columnIndex < width; columnIndex++) {
-            const column = this.board[columnIndex];
-            for (let i = 0; i < count; i++) {
-                column.push(new CoordinateAttribute());
-            }
-        }
-        this.maxRow += count;
-    }
-
-    _addRowsTop(count) {
-        const width = this.getWidth();
-        for (let columnIndex = 0; columnIndex < width; columnIndex++) {
-            const column = this.board[columnIndex];
-            for (let i = 0; i < count; i++) {
-                column.unshift(new CoordinateAttribute());
-            }
-        }
-        this.minRow -= count;
-    }
-
-    _getCoordinateAttribute(coordinate) {
-        const columnIndex = coordinate.x - this.minColumn;
-        const rowIndex = coordinate.y - this.minRow;
-        return this.board[columnIndex][rowIndex];
-    }
-
-    _notifyBoundsChanged() {
-        if (this.boundsChangedCallback) {
-            this.boundsChangedCallback(this.getBoardInfo());
         }
     }
 }

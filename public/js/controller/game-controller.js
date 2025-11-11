@@ -32,7 +32,6 @@ export default class GameController {
         this.isFullScreen = false;
         this.localPlayerSpawnHighlightEndTime = 0;
         this.localPlayerLastMoveCounter = null;
-        this._isRenderLoopRunning = false;
     }
 
     connect(io) {
@@ -199,29 +198,13 @@ export default class GameController {
      *******************************/
 
     _createBoard(board) {
-        const offsetX = board.OFFSET_X || 0;
-        const offsetY = board.OFFSET_Y || 0;
-        if (this.canvasView) {
-            this.canvasView.updateBoardSize(board.HORIZONTAL_SQUARES, board.VERTICAL_SQUARES, offsetX, offsetY);
-            this.canvasView.clear();
-            this.canvasView.updateDisplaySize(this.isFullScreen);
-            return;
-        }
         this.canvasView =
             CanvasFactory.createCanvasView(
-                board.SQUARE_SIZE_IN_PIXELS,
-                board.HORIZONTAL_SQUARES,
-                board.VERTICAL_SQUARES,
-                offsetX,
-                offsetY,
-                this.canvasClicked.bind(this));
+                board.SQUARE_SIZE_IN_PIXELS, board.HORIZONTAL_SQUARES, board.VERTICAL_SQUARES, this.canvasClicked.bind(this));
         this.canvasView.clear();
         this.canvasView.updateDisplaySize(this.isFullScreen);
         this.gameView.ready();
-        if (!this._isRenderLoopRunning) {
-            this._isRenderLoopRunning = true;
-            this.renderGame();
-        }
+        this.renderGame();
     }
 
     _handleBackgroundImage(backgroundImage) {

@@ -27,8 +27,6 @@ class GameController {
         this.nameService = new NameService();
         this.boardOccupancyService = new BoardOccupancyService();
         this.notificationService = new NotificationService();
-        this.boardOccupancyService.setBoundsChangedCallback(
-            this._handleBoardBoundsChanged.bind(this));
         this.botDirectionService = new BotDirectionService(this.boardOccupancyService);
         this.foodService = new FoodService(this.playerStatBoard, this.boardOccupancyService,
             this.nameService, this.notificationService);
@@ -129,10 +127,6 @@ class GameController {
     /*******************************
      *  socket.io handling methods *
      *******************************/
-
-    _handleBoardBoundsChanged(boardInfo) {
-        this.notificationService.broadcastBoardInfo(boardInfo);
-    }
 
     _canvasClicked(socket, x, y) {
         const player = this.playerContainer.getPlayer(socket.id);

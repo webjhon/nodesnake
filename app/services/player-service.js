@@ -1,4 +1,5 @@
 'use strict';
+const Board = require('../configs/board');
 const ServerConfig = require('../configs/server-config');
 const Player = require('../models/player');
 
@@ -36,7 +37,7 @@ class PlayerService {
         const playerName = this.nameService.getPlayerName();
         const newPlayer = this.createPlayer(socket.id, playerName);
         socket.emit(ServerConfig.IO.OUTGOING.NEW_PLAYER_INFO, playerName, newPlayer.color);
-        socket.emit(ServerConfig.IO.OUTGOING.BOARD_INFO, this.boardOccupancyService.getBoardInfo());
+        socket.emit(ServerConfig.IO.OUTGOING.BOARD_INFO, Board);
         this.notificationService.broadcastNotification(`${playerName} entrou no jogo!`, newPlayer.color);
         const backgroundImage = this.imageService.getBackgroundImage();
         if (backgroundImage) {
@@ -164,11 +165,10 @@ class PlayerService {
             if (this.playerContainer.isSpectating(player.id)) {
                 continue;
             }
-            const nextCoordinate = CoordinateService.getNextCoordinate(player.getHeadCoordinate(), player.direction);
-            this.boardOccupancyService.ensureCoordinateWithinBounds(nextCoordinate);
             this.boardOccupancyService.removePlayerOccupancy(player.id, player.getSegments());
-            player.move(nextCoordinate);
-            if (this.boardOccupancyService.isWall(player.getHeadCoordinate())) {
+            CoordinateService.movePlayer(player);
+            if (this.boardOccupancyService.isOutOfBounds(player.getHeadCoordinate()) ||
+                    this.boardOccupancyService.isWall(player.getHeadCoordinate())) {
                 player.clearAllSegments();
                 this.playerContainer.addPlayerIdToRespawn(player.id);
                 this.notificationService.broadcastRanIntoWall(player.name, player.color);
