@@ -11,36 +11,67 @@ class NotificationService {
     }
 
     broadcastClearBackgroundImage() {
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NEW_BACKGROUND_IMAGE);
     }
 
     broadcastGameState(gameState) {
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NEW_STATE, gameState);
     }
 
+    broadcastBoardInfo(boardInfo) {
+        if (!this.sockets) {
+            return;
+        }
+        this.sockets.emit(ServerConfig.IO.OUTGOING.BOARD_INFO, boardInfo);
+    }
+
     broadcastKill(killerName, victimName, killerColor, victimColor, victimLength) {
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NOTIFICATION.KILL, killerName, victimName,
             killerColor, victimColor, victimLength);
     }
 
     broadcastKillEachOther(victimSummaries) {
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NOTIFICATION.KILLED_EACH_OTHER, victimSummaries);
     }
 
     broadcastNewBackgroundImage(backgroundImage) {
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NEW_BACKGROUND_IMAGE, backgroundImage);
     }
 
     broadcastNotification(message, fontColor) {
         console.log(message);
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NOTIFICATION.GENERAL, message, fontColor);
     }
 
     broadcastRanIntoWall(playerName, playerColor) {
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NOTIFICATION.RAN_INTO_WALL, playerName, playerColor);
     }
 
     broadcastSuicide(victimName, victimColor) {
+        if (!this.sockets) {
+            return;
+        }
         this.sockets.emit(ServerConfig.IO.OUTGOING.NOTIFICATION.SUICIDE, victimName, victimColor);
     }
 

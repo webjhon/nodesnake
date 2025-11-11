@@ -55,9 +55,8 @@ class BotDirectionService {
         for (let i = 0; i < turnsToLookAhead; i++) {
             const nextCoordinate = CoordinateService.getNextCoordinate(coordinate, direction);
             coordinate = nextCoordinate;
-            const isOutOfBounds = this.boardOccupancyService.isOutOfBounds(nextCoordinate);
-            if (isOutOfBounds) {
-                return true;
+            if (!this.boardOccupancyService.containsCoordinate(nextCoordinate)) {
+                continue;
             }
             const isSafe = this.boardOccupancyService.isSafe(nextCoordinate);
             if (!isSafe) {
