@@ -97,24 +97,56 @@ export default class GameView {
     }
 
     showPlayerStats(playerStats) {
-        let formattedScores = '<div class="player-stats-header"><span class="image"></span>' +
-            '<span class="name">Nome</span>' +
-            '<span class="stat">Pontuação</span>' +
-            '<span class="stat">Recorde</span>' +
-            '<span class="stat">Eliminações</span>' +
-            '<span class="stat">Mortes</span></div>';
-        for (const playerStat of playerStats) {
-            let playerImageElement = '';
-            if (playerStat.base64Image) {
-                playerImageElement = `<img src=${playerStat.base64Image} class='player-stats-image'></img>`;
+        let formattedScores = '';
+        playerStats.forEach((playerStat, index) => {
+            const rank = index + 1;
+            let rankModifierClass = 'rank-icon--standard';
+            if (rank === 1) {
+                rankModifierClass = 'rank-icon--gold';
+            } else if (rank === 2) {
+                rankModifierClass = 'rank-icon--silver';
+            } else if (rank === 3) {
+                rankModifierClass = 'rank-icon--bronze';
             }
-            formattedScores += `<div class='player-stats-content'><span class='image'>${playerImageElement}</span>` +
-                `<span class='name' style='color: ${playerStat.color}'>${playerStat.name}</span>` +
-                `<span class='stat'>${playerStat.score}</span>` +
-                `<span class='stat'>${playerStat.highScore}</span>` +
-                `<span class='stat'>${playerStat.kills}</span>` +
-                `<span class='stat'>${playerStat.deaths}</span></div>`;
-        }
+
+            const rankIcon = `<span class='rank-icon ${rankModifierClass}' aria-label='${rank}º lugar'>` +
+                `${rank}º</span>`;
+            const playerInitial = playerStat.name ? playerStat.name.charAt(0).toUpperCase() : '?';
+            let playerAvatarElement = [
+                '<span class="player-stats-avatar player-stats-avatar--placeholder">',
+                playerInitial,
+                '</span>',
+            ].join('');
+            if (playerStat.base64Image) {
+                playerAvatarElement = [
+                    '<span class="player-stats-avatar">',
+                    `<img src='${playerStat.base64Image}' alt=''>`,
+                    '</span>',
+                ].join('');
+            }
+
+            const metrics = [
+                { label: 'Pontuação', value: playerStat.score },
+                { label: 'Recorde', value: playerStat.highScore },
+                { label: 'Eliminações', value: playerStat.kills },
+                { label: 'Mortes', value: playerStat.deaths },
+            ];
+
+            const metricCells = metrics.map(metric => (
+                `<span class='player-stats-metric-cell' data-label='${metric.label}'>${metric.value}</span>`
+            )).join('');
+
+            formattedScores += `
+                <div class='player-stats-row' role='row'>
+                    <span class='player-stats-rank-cell'>${rankIcon}</span>
+                    <span class='player-stats-name-cell'>${playerAvatarElement}
+                        <span class='player-stats-name' style='color: ${playerStat.color}'>${playerStat.name}</span>
+                    </span>
+                    ${metricCells}
+                </div>
+            `;
+        });
+
         DomHelper.setPlayerStatsDivText(formattedScores);
     }
 
