@@ -44,13 +44,7 @@
                         </div>
                         <div id="kill-messages" class="kill-feed"></div>
                     </div>
-                    <aside class="right-content command-center">
-                        <div class="panel" id="player-stats-panel">
-                            <h2 class="panel-title">Pilotos em campo</h2>
-                            <p class="subtitle-text">Monitoramento em tempo real</p>
-                            <div class="divider"></div>
-                            <div id="player-stats"></div>
-                        </div>
+                    <aside class="right-content command-center" aria-label="Centro de transmissões">
                         <div class="panel" id="notifications-panel">
                             <h2 class="panel-title">Transmissões</h2>
                             <p class="subtitle-text">Eventos críticos e mensagens do sistema</p>
@@ -58,6 +52,27 @@
                             <div id="notifications"></div>
                         </div>
                     </aside>
+                    <section class="panel leaderboard-panel" id="player-stats-panel" aria-live="polite">
+                        <div class="leaderboard-panel__header">
+                            <div>
+                                <p class="leaderboard-panel__eyebrow">Ranking ao vivo</p>
+                                <h2 class="panel-title">Pilotos em campo</h2>
+                            </div>
+                            <div class="leaderboard-panel__badge" aria-hidden="true">Arena Prime</div>
+                        </div>
+                        <p class="leaderboard-panel__description">Monitore o desempenho dos pilotos em tempo real e celebre os destaques dourados, prateados e bronze da rodada.</p>
+                        <div class="leaderboard-panel__surface" role="table" aria-label="Ranking dos jogadores">
+                            <div class="leaderboard-table__head" role="row">
+                                <span class="leaderboard-table__cell leaderboard-table__cell--rank">Posição</span>
+                                <span class="leaderboard-table__cell leaderboard-table__cell--name">Piloto</span>
+                                <span class="leaderboard-table__cell">Pontuação</span>
+                                <span class="leaderboard-table__cell">Recorde</span>
+                                <span class="leaderboard-table__cell">Eliminações</span>
+                                <span class="leaderboard-table__cell">Mortes</span>
+                            </div>
+                            <div id="player-stats" class="leaderboard-table__body" role="rowgroup"></div>
+                        </div>
+                    </section>
                 </section>
                 <div id="player-settings-modal" class="modal" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="player-settings-title">
                     <div id="player-settings-backdrop" class="modal-backdrop" data-close="player-settings"></div>
