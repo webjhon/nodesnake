@@ -31,6 +31,7 @@ export default class GameView {
         this.isAdminControlsModalOpen = false;
         this.isAdminAuthenticated = false;
         this._renderPresetSkins();
+        this._initPlayerProfileForm();
         this._initEventHandling(botChangeCallback, foodChangeCallback, muteAudioCallback, playerColorChangeCallback,
             speedChangeCallback, startLengthChangeCallback, toggleGridLinesCallback);
     }
@@ -168,6 +169,80 @@ export default class GameView {
     /*******************
      *  Event handling *
      *******************/
+
+    _initPlayerProfileForm() {
+        const playerProfileForm = DomHelper.getPlayerProfileForm();
+        if (!playerProfileForm) {
+            return;
+        }
+
+        playerProfileForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            this._savePlayerProfile();
+        });
+
+        this._loadStoredPlayerProfile();
+    }
+
+    _loadStoredPlayerProfile() {
+        const storedProfile = localStorage.getItem(ClientConfig.LOCAL_STORAGE.PLAYER_PROFILE);
+        if (storedProfile) {
+            try {
+                const parsedProfile = JSON.parse(storedProfile);
+                DomHelper.setPlayerProfileFormValues(parsedProfile);
+                DomHelper.setPlayerProfileFeedback('Respostas carregadas do seu dispositivo.', 'success');
+                return;
+            } catch (error) {
+                DomHelper.setPlayerProfileFeedback('Não foi possível recuperar as respostas anteriores.', 'warning');
+            }
+        }
+
+        const storedName = localStorage.getItem(ClientConfig.LOCAL_STORAGE.PLAYER_NAME);
+        if (storedName) {
+            DomHelper.setPlayerProfileFormValues({ preferredName: storedName });
+        }
+        DomHelper.setPlayerProfileFeedback('Compartilhe alguns dados para ajudar nas próximas pesquisas.');
+    }
+
+    _savePlayerProfile() {
+        const preferredNameInput = DomHelper.getPlayerProfilePreferredNameInput();
+        const experienceSelect = DomHelper.getPlayerProfileExperienceSelect();
+        const goalSelect = DomHelper.getPlayerProfileGoalSelect();
+        const regionInput = DomHelper.getPlayerProfileRegionInput();
+
+        const profileData = {
+            preferredName: preferredNameInput ? preferredNameInput.value.trim() : '',
+            experienceLevel: experienceSelect ? experienceSelect.value : '',
+            playGoal: goalSelect ? goalSelect.value : '',
+            region: regionInput ? regionInput.value.trim() : '',
+        };
+
+        localStorage.setItem(ClientConfig.LOCAL_STORAGE.PLAYER_PROFILE, JSON.stringify(profileData));
+        DomHelper.setPlayerProfileFeedback('Respostas registradas para análises futuras.', 'success');
+        this._announceProfileSaved(profileData);
+    }
+
+    _announceProfileSaved(profileData) {
+        const details = [];
+        if (profileData.preferredName) {
+            details.push(`Identidade: ${profileData.preferredName}`);
+        }
+        if (profileData.experienceLevel) {
+            details.push(`Experiência: ${profileData.experienceLevel}`);
+        }
+        if (profileData.playGoal) {
+            details.push(`Objetivo: ${profileData.playGoal}`);
+        }
+        if (profileData.region) {
+            details.push(`Região: ${profileData.region}`);
+        }
+
+        if (details.length > 0) {
+            this.showNotification(`Perfil atualizado • ${details.join(' • ')}`, '#9ccffb');
+        } else {
+            this.showNotification('Perfil atualizado.', '#9ccffb');
+        }
+    }
 
     _handleChangeNameButtonClick() {
         if (this.isChangingName) {

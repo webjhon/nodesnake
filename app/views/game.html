@@ -33,6 +33,50 @@
                 </div>
             </header>
             <main class="body-content">
+                <section class="panel player-research-panel" aria-labelledby="player-research-title">
+                    <div class="player-research-panel__header">
+                        <p class="player-research-panel__eyebrow">Pesquisa rápida</p>
+                        <h2 id="player-research-title" class="panel-title">Conte quem você é no cockpit</h2>
+                        <p class="player-research-panel__description">Use esses dados apenas para registro e futuras análises da comunidade da arena.</p>
+                    </div>
+                    <form id="player-profile-form" class="player-research-form">
+                        <div class="player-research-form__grid">
+                            <label class="player-research-field" for="player-profile-name">
+                                <span class="control-label">Nome ou codinome preferido</span>
+                                <input type="text" id="player-profile-name" name="player-profile-name" maxlength="30" placeholder="Ex.: Capitã Prisma" autocomplete="nickname" />
+                            </label>
+                            <label class="player-research-field" for="player-profile-experience">
+                                <span class="control-label">Experiência em jogos de cobra</span>
+                                <select id="player-profile-experience" name="player-profile-experience">
+                                    <option value="">Selecione</option>
+                                    <option value="iniciante">Iniciante — estou conhecendo agora</option>
+                                    <option value="casual">Casual — jogo de vez em quando</option>
+                                    <option value="competitivo">Competitivo — entro para disputar posições</option>
+                                    <option value="veterano">Veterano — já lidero várias arenas</option>
+                                </select>
+                            </label>
+                            <label class="player-research-field" for="player-profile-goal">
+                                <span class="control-label">Objetivo nesta rodada</span>
+                                <select id="player-profile-goal" name="player-profile-goal">
+                                    <option value="">Selecione</option>
+                                    <option value="treino">Treinar movimentos e experimentar skins</option>
+                                    <option value="social">Jogar com amigos ou observar partidas</option>
+                                    <option value="recorde">Buscar recordes pessoais</option>
+                                    <option value="ranked">Subir no ranking e eliminar rivais</option>
+                                </select>
+                            </label>
+                            <label class="player-research-field" for="player-profile-region">
+                                <span class="control-label">Região ou horário preferido</span>
+                                <input type="text" id="player-profile-region" name="player-profile-region" maxlength="60" placeholder="Ex.: São Paulo — Noite" autocomplete="address-level1" />
+                            </label>
+                        </div>
+                        <p id="player-profile-feedback" class="player-research-feedback">Compartilhe alguns dados para ajudar nas próximas pesquisas.</p>
+                        <div class="player-research-actions">
+                            <button type="submit" class="player-research-submit">Registrar respostas</button>
+                            <p class="player-research-hint">As informações ficam armazenadas apenas neste dispositivo para consultas futuras.</p>
+                        </div>
+                    </form>
+                </section>
                 <section class="main-container">
                     <div class="left-content">
                         <div class="game-stage">
