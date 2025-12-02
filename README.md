@@ -37,6 +37,7 @@ Open your web browser to `localhost:3000`
  - Player statistics including kills/deaths/score
  - Steal player scores and length by killing them
  - Game notifications
+ - Quick player research form on the landing screen (saved locally for future sessions)
  - Kill announcements
  - Randomized spawns
  - Spectate

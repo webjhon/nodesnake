@@ -53,5 +53,6 @@ export default {
     LOCAL_STORAGE: {
         PLAYER_IMAGE: 'node-multiplayer-snake-player-image',
         PLAYER_NAME: 'node-multiplayer-snake-player-name',
+        PLAYER_PROFILE: 'node-multiplayer-snake-player-profile',
     },
 };

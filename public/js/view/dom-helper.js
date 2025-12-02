@@ -144,6 +144,30 @@ export default class DomHelper {
         return document.getElementById('preset-skin-list');
     }
 
+    static getPlayerProfileForm() {
+        return document.getElementById('player-profile-form');
+    }
+
+    static getPlayerProfilePreferredNameInput() {
+        return document.getElementById('player-profile-name');
+    }
+
+    static getPlayerProfileExperienceSelect() {
+        return document.getElementById('player-profile-experience');
+    }
+
+    static getPlayerProfileGoalSelect() {
+        return document.getElementById('player-profile-goal');
+    }
+
+    static getPlayerProfileRegionInput() {
+        return document.getElementById('player-profile-region');
+    }
+
+    static getPlayerProfileFeedback() {
+        return document.getElementById('player-profile-feedback');
+    }
+
     static getPlayerNameElement() {
         return document.getElementById('player-name');
     }
@@ -246,6 +270,46 @@ export default class DomHelper {
 
     static setPlayerStatsDivText(text) {
         document.getElementById('player-stats').innerHTML = text;
+    }
+
+    static setPlayerProfileFeedback(text, variant = 'muted') {
+        const feedback = this.getPlayerProfileFeedback();
+        if (!feedback) {
+            return;
+        }
+        feedback.textContent = text;
+        feedback.classList.remove('is-success', 'is-warning');
+        if (variant === 'success') {
+            feedback.classList.add('is-success');
+        } else if (variant === 'warning') {
+            feedback.classList.add('is-warning');
+        }
+    }
+
+    static setPlayerProfileFormValues(profileData) {
+        if (!profileData) {
+            return;
+        }
+
+        const preferredNameInput = this.getPlayerProfilePreferredNameInput();
+        if (preferredNameInput && profileData.preferredName) {
+            preferredNameInput.value = profileData.preferredName;
+        }
+
+        const experienceSelect = this.getPlayerProfileExperienceSelect();
+        if (experienceSelect && profileData.experienceLevel) {
+            experienceSelect.value = profileData.experienceLevel;
+        }
+
+        const goalSelect = this.getPlayerProfileGoalSelect();
+        if (goalSelect && profileData.playGoal) {
+            goalSelect.value = profileData.playGoal;
+        }
+
+        const regionInput = this.getPlayerProfileRegionInput();
+        if (regionInput && profileData.region) {
+            regionInput.value = profileData.region;
+        }
     }
 
     static setToggleSoundButtonText(text) {
